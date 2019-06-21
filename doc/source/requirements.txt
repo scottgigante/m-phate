@@ -8,3 +8,9 @@ tensorflow>=1.13
 joblib
 phate>=0.4.3
 graphtools>=1.1
+sphinx<=1.8.5
+sphinxcontrib-napoleon
+autodocsumm
+ipykernel
+nbsphinx
+.
