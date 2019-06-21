@@ -4,6 +4,7 @@ import tensorflow as tf
 import keras
 import m_phate
 import argparse
+import os
 
 from scipy.io import savemat
 
@@ -22,13 +23,14 @@ parser.add_argument(
 parser.add_argument('--regularize', '-r',
                     choices=['kernel', 'activity'], default=None, type=str)
 parser.add_argument('--dropout', '-d', type=restricted_float, default=None)
-parser.add_argument('--scrambled', '-s', action='set_true', default=False)
+parser.add_argument('--scrambled', '-s', action='store_true', default=False)
 parser.add_argument('--batch-size', '-b', type=int, default=256)
 parser.add_argument('--epochs', '-e', type=int, default=300)
+parser.add_argument('--save-dir', '-S', type=str, default="./data")
 
 args = parser.parse_args()
 
-if (args.regularizer is not None and args.regualrize is None) or \
+if (args.regularizer is not None and args.regularize is None) or \
         (args.regularizer is None and args.regularize is not None):
     parser.error('--regularizer and --regularize must be given together')
 
@@ -115,7 +117,7 @@ if len(filename) == 0:
 filename = "_".join(filename)
 
 savemat(
-    "data/generalization/mnist_classifier_{}.mat".format(filename), {
+    os.path.join(args.save_dir, "generalization/mnist_classifier_{}.mat".format(filename)), {
         'trace': trace.trace, 'digit': y_test.argmax(1)[trace_idx],
         'layer': np.concatenate([np.repeat(i, int(layer.shape[1]))
                                  for i, layer in enumerate(model_trace.outputs)]),

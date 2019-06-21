@@ -4,6 +4,7 @@ import tensorflow as tf
 import m_phate
 import keras
 import argparse
+import os
 
 from scipy.io import savemat
 
@@ -55,6 +56,7 @@ parser.add_argument('scheme', choices=['task', 'domain', 'class'], type=str)
 parser.add_argument('--optimizer', '-o', choices=['adam', 'adagrad'], type=str)
 parser.add_argument('--rehearsal', '-r', type=int, default=0)
 parser.add_argument('--batch-size', '-b', type=int, default=128)
+parser.add_argument('--save-dir', '-S', type=str, default="./data")
 
 args = parser.parse_args()
 
@@ -161,7 +163,7 @@ if rehearsal:
 filename = "_".join(filename)
 
 savemat(
-    "data/task_switch/mnist_classifier_incremental_{}.mat".format(filename), {
+    os.path.join(args.save_dir, "task_switch/mnist_classifier_incremental_{}.mat".format(filename)), {
         'trace': trace.trace, 'digit': y_test.argmax(1)[trace_idx],
         'layer': np.concatenate([np.repeat(i, int(layer.shape[1]))
                                  for i, layer in enumerate(model_trace.outputs)]),

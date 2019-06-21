@@ -6,12 +6,18 @@ import matplotlib.pyplot as plt
 import m_phate
 import scprep
 import os
+import sys
 
 from scipy.io import loadmat
 
 
-data_dir = os.path.expanduser(
-    "data/task_switch/")
+try:
+    data_dir = os.path.expanduser(sys.argv[1])
+except KeyError:
+    data_dir = "./data"
+
+data_dir = os.path.join(data_dir, "task_switch")
+
 n_skip = 50
 n_step = 50
 

@@ -2,14 +2,24 @@ import matplotlib
 matplotlib.use("Agg")  # noqa
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import loadmat
-import scprep
+
 import m_phate
+import scprep
+import os
+import sys
+
+from scipy.io import loadmat
 
 ###############
 # Load data
 ###############
-data = loadmat("data/generalization/mnist_classifier_vanilla.mat")
+try:
+    data_dir = os.path.expanduser(sys.argv[1])
+except KeyError:
+    data_dir = "./data"
+
+data = loadmat(os.path.join(
+    data_dir, "generalization/mnist_classifier_vanilla.mat"))
 trace = data['trace']
 
 ###############

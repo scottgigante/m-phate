@@ -4,15 +4,22 @@ matplotlib.use("Agg")  # noqa
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+
 import m_phate
-import os
 import scprep
+import os
+import sys
 
 from scipy.io import loadmat
 from sklearn import linear_model
 from sklearn.metrics import r2_score
 
-data_dir = "data/generalization/"
+try:
+    data_dir = os.path.expanduser(sys.argv[1])
+except KeyError:
+    data_dir = "./data"
+
+data_dir = os.path.join(data_dir, "generalization")
 
 out = {}
 for filename in os.listdir(data_dir):

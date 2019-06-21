@@ -10,14 +10,20 @@ import phate
 import scprep
 import tasklogger
 import os
+import sys
 
 from scipy.io import loadmat
 from sklearn.decomposition import KernelPCA
 from sklearn.manifold import Isomap, TSNE
 from sklearn.neighbors import NearestNeighbors
 
+try:
+    data_dir = os.path.expanduser(sys.argv[1])
+except KeyError:
+    data_dir = "./data"
 
-data = loadmat("data/generalization/mnist_classifier_vanilla.mat")
+data = loadmat(os.path.join(
+    data_dir, "generalization/mnist_classifier_vanilla.mat"))
 
 trace = data['trace']
 loss = data['val_loss']
