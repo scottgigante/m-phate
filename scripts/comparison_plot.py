@@ -1,0 +1,163 @@
+import matplotlib
+matplotlib.use("Agg")  # noqa
+import numpy as np
+import phate
+import os
+import graphtools
+import graphtools.utils
+import matplotlib.pyplot as plt
+from sklearn.decomposition import KernelPCA
+from sklearn.manifold import Isomap, TSNE
+from scipy.io import loadmat
+import scprep
+from multiscalegraph.kernel import multiscale_kernel, DM
+from sklearn.neighbors import NearestNeighbors
+import pandas as pd
+import tasklogger
+
+
+data = loadmat("data/generalization/mnist_classifier_vanilla.mat")
+
+trace = data['trace']
+loss = data['val_loss']
+
+n_skip = 0
+trace = trace[n_skip:]
+
+n = trace.shape[0]
+m = trace.shape[1]
+
+# normalize
+trace = trace - np.mean(trace, axis=2)[:, :, None]
+trace = trace / np.std(trace, axis=2)[:, :, None]
+
+neuron_ids = np.tile(np.arange(m), n)
+layer_ids = np.tile(data['layer'], n)
+epoch = np.repeat(np.arange(n) + n_skip, m)
+digit_ids = np.repeat(np.arange(10), 10)
+digit_activity = np.array([np.sum(np.abs(trace[:, :, digit_ids == digit]), axis=2)
+                           for digit in np.unique(digit_ids)])
+most_active_digit = np.argmax(digit_activity, axis=0).flatten()
+
+tasklogger.log_start("Naive DR")
+trace_flat = trace.reshape(-1, trace.shape[-1])
+tasklogger.log_start("PHATE")
+phate_naive_op = phate.PHATE(verbose=0)
+phate_naive = phate_naive_op.fit_transform(trace_flat)
+tasklogger.log_complete("PHATE")
+tasklogger.log_start("DM")
+dm_naive = DM(phate_naive_op.graph)
+tasklogger.log_complete("DM")
+tasklogger.log_start("t-SNE")
+tsne_naive = TSNE().fit_transform(trace_flat)
+tasklogger.log_complete("t-SNE")
+tasklogger.log_start("ISOMAP")
+isomap_naive = Isomap().fit_transform(trace_flat)
+tasklogger.log_complete("ISOMAP")
+tasklogger.log_complete("Naive DR")
+
+tasklogger.log_start("Multislice DR")
+tasklogger.log_start("M-PHATE")
+K = multiscale_kernel(trace, knn=2, decay=5,
+                      interslice_knn=25)
+graph = graphtools.Graph(
+    K, precomputed="affinity", n_landmark=4000, n_svd=100)
+phate_op = phate.PHATE(potential_method='sqrt', verbose=0)
+m_phate = phate_op.fit_transform(graph)
+tasklogger.log_complete("M-PHATE")
+
+tasklogger.log_start("DM")
+dm_ms = DM(graph)
+tasklogger.log_complete("DM")
+
+geodesic_file = os.path.expanduser(
+    "data/classifier_mnist_geodesic.npy")
+if False:
+    tasklogger.log_start("geodesic distances")
+    tasklogger.log_warning(
+        "Warning: geodesic distance calculation will take a long time.")
+    D_geo = graph.shortest_path(distance='affinity')
+    tasklogger.log_complete("geodesic distances")
+    np.save(geodesic_file, D_geo)
+else:
+    D_geo = np.load(geodesic_file)
+
+D_geo[~np.isfinite(D_geo)] = np.max(D_geo[np.isfinite(D_geo)])
+
+isomap_ms = KernelPCA(2, kernel="precomputed").fit_transform(D_geo)
+tsne_ms = TSNE(metric='precomputed').fit_transform(D_geo)
+
+tasklogger.log_complete("Multislice DR")
+
+
+plt.rc('font', size=14)
+fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(16, 4))
+scprep.plot.scatter2d(phate_naive, label_prefix="PHATE", ticks=False,
+                      c=epoch, ax=ax1, legend=False)
+scprep.plot.scatter2d(dm_naive, label_prefix="DM", ticks=False,
+                      c=epoch, ax=ax2, legend=False)
+scprep.plot.scatter2d(isomap_naive, label_prefix="Isomap", ticks=False,
+                      c=epoch, ax=ax3, legend=False)
+scprep.plot.scatter2d(tsne_naive, label_prefix="t-SNE", ticks=False,
+                      c=epoch, ax=ax4, legend=False)
+plt.tight_layout()
+plt.savefig("comparison_naive.png")
+
+fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(16, 4))
+scprep.plot.scatter2d(m_phate, label_prefix="PHATE", ticks=False,
+                      c=epoch, ax=ax1, legend=False)
+scprep.plot.scatter2d(dm_ms, label_prefix="DM", ticks=False,
+                      c=epoch, ax=ax2, legend=False)
+scprep.plot.scatter2d(isomap_ms, label_prefix="Isomap", ticks=False,
+                      c=epoch, ax=ax3, legend=False)
+scprep.plot.scatter2d(tsne_ms, label_prefix="t-SNE", ticks=False,
+                      c=epoch, ax=ax4, legend=False)
+plt.tight_layout()
+plt.savefig("comparison_multiscale.png")
+
+
+def evaluate_loss(Y):
+    loss_change = loss[0, :-1] - loss[0, 1:]
+    Y_change = np.sum(
+        (Y.reshape(n, m, -1)[:-1] - Y.reshape(n, m, -1)[1:])**2, axis=2) / Y.shape[-1]
+    return scprep.stats.pairwise_correlation(Y_change, loss_change).mean()
+
+
+def evaluate_within_slice(Y, k=40):
+    neighbors_op = NearestNeighbors(k)
+    result = []
+    for e in np.unique(epoch):
+        neighbors_op.fit(Y[epoch == e])
+        _, Y_indices = neighbors_op.kneighbors()
+        neighbors_op.fit(trace[e])
+        _, trace_indices = neighbors_op.kneighbors()
+        result.append([np.mean(np.isin(x, y))
+                       for x, y in zip(Y_indices, trace_indices)])
+    return np.mean(result)
+
+
+def evaluate_between_slice(Y, k=40):
+    neighbors_op = NearestNeighbors(k)
+    result = []
+    for neuron in np.unique(neuron_ids):
+        neighbors_op.fit(Y[neuron_ids == neuron])
+        _, Y_indices = neighbors_op.kneighbors()
+        neighbors_op.fit(trace[:, neuron])
+        _, trace_indices = neighbors_op.kneighbors()
+        result.append([np.mean(np.isin(x, y))
+                       for x, y in zip(Y_indices, trace_indices)])
+    return np.mean(result)
+
+
+embeddings = {'phate_ms': m_phate, 'dm_ms': dm_ms, 'isomap_ms': isomap_ms, 'tsne_ms': tsne_ms,
+              'phate': phate_naive, 'dm': dm_naive, 'isomap': isomap_naive, 'tsne': tsne_naive}
+
+df10 = pd.DataFrame({name: [evaluate_within_slice(Y, k=10), evaluate_between_slice(Y, k=10)] for name, Y in embeddings.items()},
+                    index=['intraslice', 'interslice'])
+df40 = pd.DataFrame({name: [evaluate_within_slice(Y, k=40), evaluate_between_slice(Y, k=40)] for name, Y in embeddings.items()},
+                    index=['intraslice', 'interslice'])
+
+df10.round(2).to_latex().replace('interslice', 'Interslice, $k=10$').replace(
+    'intraslice', 'Intraslice, $k=10$').split('\n')[4:6]
+df40.round(2).to_latex().replace('interslice', 'Interslice, $k=40$').replace(
+    'intraslice', 'Intraslice, $k=40$').split('\n')[4:6]
