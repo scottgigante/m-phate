@@ -1,14 +1,14 @@
 import numpy as np
 import tensorflow as tf
+
+import m_phate
 import keras
-import os
 import argparse
+
 from scipy.io import savemat
 
-from multiscalegraph.train import build_config, BatchTraceHistory
-from multiscalegraph.data import load_mnist
 
-keras.backend.set_session(tf.Session(config=build_config()))
+keras.backend.set_session(tf.Session(config=m_phate.train.build_config()))
 
 
 def mask_logits_to_softmax(y_true, y_pred):
@@ -64,7 +64,7 @@ n_rehearsal = args.rehearsal
 batch_size = args.batch_size
 
 output_activation = None if args.scheme == 'task' else 'softmax'
-hidden_activation = keras.layers.ReLU()  # keras.layers.LeakyReLU(alpha=0.1)
+hidden_activation = keras.layers.ReLU()
 loss = masked_crossentropy if args.scheme == 'task' else 'categorical_crossentropy'
 accuracy = masked_accuracy if args.scheme == 'task' else 'categorical_accuracy'
 metric_name = 'masked' if args.scheme == 'task' else 'categorical'
@@ -75,7 +75,7 @@ else:
     optimizer = keras.optimizers.Adam(lr=1e-5)
 
 
-x_train, x_test, y_train, y_test = load_mnist()
+x_train, x_test, y_train, y_test = m_phate.data.load_mnist()
 
 
 np.random.seed(42)
@@ -100,7 +100,7 @@ model_trace = keras.models.Model(inputs=inputs, outputs=[h1, h2])
 model = keras.models.Model(inputs=inputs, outputs=outputs)
 
 
-trace = BatchTraceHistory(trace_data, model_trace)
+trace = m_phate.train.BatchTraceHistory(trace_data, model_trace)
 history = keras.callbacks.History()
 
 model.compile(optimizer=optimizer, loss=loss,

@@ -1,19 +1,18 @@
 import matplotlib
 matplotlib.use("Agg")  # noqa
+
 import numpy as np
-import phate
-import os
-import graphtools
-import graphtools.utils
 import matplotlib.pyplot as plt
-from scipy.io import loadmat
+import pandas as pd
+import m_phate
+import os
 import scprep
-from multiscalegraph.kernel import multiscale_kernel
+
+from scipy.io import loadmat
 from sklearn import linear_model
 from sklearn.metrics import r2_score
 
 data_dir = "data/generalization/"
-n_skip = 0
 
 out = {}
 for filename in os.listdir(data_dir):
@@ -23,29 +22,27 @@ for filename in os.listdir(data_dir):
     trace = data['trace']
     loss = data['loss']
     val_loss = data['val_loss']
-    trace = trace[n_skip:]
+
     n = trace.shape[0]
     m = trace.shape[1]
-    trace = trace - np.mean(trace, axis=2)[:, :, None]
-    trace = trace / np.std(trace, axis=2)[:, :, None]
     neuron_ids = np.tile(np.arange(m), n)
     layer_ids = np.tile(data['layer'], n)
-    epoch = np.repeat(np.arange(n) + n_skip, m)
+    epoch = np.repeat(np.arange(n), m)
     digit_ids = np.repeat(np.arange(10), 10)
     digit_activity = np.array([np.sqrt(np.sum(trace[:, :, digit_ids == digit]**2, axis=2))
                                for digit in np.unique(digit_ids)])
     most_active_digit = np.argmax(digit_activity, axis=0).flatten()
+
     if filename in out:
-        ph = out[filename]['phate']
+        m_phate_data = out[filename]['phate']
     else:
-        K = multiscale_kernel(trace, knn=2, decay=5,
-                              fixed_bandwidth=False, interslice_knn=25, upweight=1)
-        graph = graphtools.Graph(
-            K, precomputed="affinity", n_landmark=3000, n_svd=20)
-        phate_op = phate.PHATE(potential_method='sqrt')
-        ph = phate_op.fit_transform(graph)
-    out[filename] = {'phate': ph, 'epoch': epoch, 'most_active_digit': most_active_digit,
-                     'layer_ids': layer_ids, 'loss': loss, 'val_loss': val_loss, 'digit_activity': digit_activity}
+        m_phate_op = m_phate.M_PHATE()
+        m_phate_data = m_phate_op.fit_transform(trace)
+
+    out[filename] = {'phate': m_phate_data, 'epoch': epoch,
+                     'most_active_digit': most_active_digit,
+                     'layer_ids': layer_ids, 'loss': loss,
+                     'val_loss': val_loss, 'digit_activity': digit_activity}
 
 plt.rc('font', size=14)
 fig, axes = plt.subplots(2, int(np.ceil(len(out) / 2)),
@@ -81,13 +78,12 @@ axes[-1, -1].set_axis_off()
 plt.tight_layout()
 plt.savefig("generalization_phate.png")
 
-import pandas as pd
-
 
 def calculate_entropy(X, bins=10):
     hist = np.histogram2d(X[:, 0], X[:, 1], bins=bins)[0]
     p = hist / np.sum(hist)
     return np.sum(-p * np.where(p > 0, np.log2(p), 0))
+
 
 performance = {}
 entropy = {}
@@ -102,7 +98,7 @@ for filename in ['dropout', 'kernel_l1', 'kernel_l2', 'vanilla', 'activity_l1', 
 performance_df = pd.DataFrame(columns=performance.keys())
 performance_df.loc['Memorization error'] = performance
 performance_df.loc['Visualization entropy'] = entropy
-performance_df.to_latex()
+performance_df
 
 
 regr = linear_model.LinearRegression()

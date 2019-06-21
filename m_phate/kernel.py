@@ -26,13 +26,19 @@ def distance_to_kernel(D, bandwidth):
     return A
 
 
-def multiscale_kernel(data, knn=2, decay=5,
+def multislice_kernel(data, knn=2, decay=5,
                       interslice_knn=25,
+                      n_pca=100,
                       n_jobs=20, **kwargs):
     n = data.shape[0]
     m = data.shape[1]
     N = n * m
     K = sparse.lil_matrix((N, N))
+
+    if n_pca is not None and n_pca < data.shape[2]:
+        data = data.reshape(n * m, -1)
+        data = graphtools.base.Data(data, n_pca=n_pca).data_nu
+        data = data.reshape(n, m, n_pca)
 
     # build within slice graphs
     with Parallel(n_jobs=n_jobs) as p:

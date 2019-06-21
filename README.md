@@ -6,7 +6,7 @@ To run:
 
 ```
 pip install --user -r requirements.txt
-export PYTHONPATH=$PYTHONPATH:$(pwd)/multiscalegraph
+export PYTHONPATH=$PYTHONPATH:$(pwd)/m_phate
 chmod +x scripts/generalization/generalization_train.sh
 ./scripts/generalization/generalization_train.sh
 chmod +x scripts/task_switching/classifier_mnist_task_switch_train.sh

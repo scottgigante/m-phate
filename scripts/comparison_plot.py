@@ -1,19 +1,20 @@
 import matplotlib
 matplotlib.use("Agg")  # noqa
+
 import numpy as np
-import phate
-import os
-import graphtools
-import graphtools.utils
+import pandas as pd
 import matplotlib.pyplot as plt
+
+import m_phate
+import phate
+import scprep
+import tasklogger
+import os
+
+from scipy.io import loadmat
 from sklearn.decomposition import KernelPCA
 from sklearn.manifold import Isomap, TSNE
-from scipy.io import loadmat
-import scprep
-from multiscalegraph.kernel import multiscale_kernel, DM
 from sklearn.neighbors import NearestNeighbors
-import pandas as pd
-import tasklogger
 
 
 data = loadmat("data/generalization/mnist_classifier_vanilla.mat")
@@ -21,23 +22,18 @@ data = loadmat("data/generalization/mnist_classifier_vanilla.mat")
 trace = data['trace']
 loss = data['val_loss']
 
-n_skip = 0
-trace = trace[n_skip:]
-
 n = trace.shape[0]
 m = trace.shape[1]
 
-# normalize
-trace = trace - np.mean(trace, axis=2)[:, :, None]
-trace = trace / np.std(trace, axis=2)[:, :, None]
-
 neuron_ids = np.tile(np.arange(m), n)
 layer_ids = np.tile(data['layer'], n)
-epoch = np.repeat(np.arange(n) + n_skip, m)
+epoch = np.repeat(np.arange(n), m)
+
 digit_ids = np.repeat(np.arange(10), 10)
 digit_activity = np.array([np.sum(np.abs(trace[:, :, digit_ids == digit]), axis=2)
                            for digit in np.unique(digit_ids)])
 most_active_digit = np.argmax(digit_activity, axis=0).flatten()
+
 
 tasklogger.log_start("Naive DR")
 trace_flat = trace.reshape(-1, trace.shape[-1])
@@ -46,7 +42,7 @@ phate_naive_op = phate.PHATE(verbose=0)
 phate_naive = phate_naive_op.fit_transform(trace_flat)
 tasklogger.log_complete("PHATE")
 tasklogger.log_start("DM")
-dm_naive = DM(phate_naive_op.graph)
+dm_naive = m_phate.kernel.DM(phate_naive_op.graph)
 tasklogger.log_complete("DM")
 tasklogger.log_start("t-SNE")
 tsne_naive = TSNE().fit_transform(trace_flat)
@@ -58,16 +54,11 @@ tasklogger.log_complete("Naive DR")
 
 tasklogger.log_start("Multislice DR")
 tasklogger.log_start("M-PHATE")
-K = multiscale_kernel(trace, knn=2, decay=5,
-                      interslice_knn=25)
-graph = graphtools.Graph(
-    K, precomputed="affinity", n_landmark=4000, n_svd=100)
-phate_op = phate.PHATE(potential_method='sqrt', verbose=0)
-m_phate = phate_op.fit_transform(graph)
+m_phate_op = m_phate.M_PHATE(verbose=0)
+m_phate_data = m_phate_op.fit_transform(trace)
 tasklogger.log_complete("M-PHATE")
-
 tasklogger.log_start("DM")
-dm_ms = DM(graph)
+dm_ms = m_phate.kernel.DM(m_phate_op.graph)
 tasklogger.log_complete("DM")
 
 geodesic_file = os.path.expanduser(
@@ -76,7 +67,7 @@ if False:
     tasklogger.log_start("geodesic distances")
     tasklogger.log_warning(
         "Warning: geodesic distance calculation will take a long time.")
-    D_geo = graph.shortest_path(distance='affinity')
+    D_geo = m_phate_op.graph.shortest_path(distance='affinity')
     tasklogger.log_complete("geodesic distances")
     np.save(geodesic_file, D_geo)
 else:
@@ -84,9 +75,12 @@ else:
 
 D_geo[~np.isfinite(D_geo)] = np.max(D_geo[np.isfinite(D_geo)])
 
-isomap_ms = KernelPCA(2, kernel="precomputed").fit_transform(D_geo)
+tasklogger.log_start("ISOMAP")
+isomap_ms = KernelPCA(2, kernel="precomputed").fit_transform(-0.5 * D_geo**2)
+tasklogger.log_complete("ISOMAP")
+tasklogger.log_start("t-SNE")
 tsne_ms = TSNE(metric='precomputed').fit_transform(D_geo)
-
+tasklogger.log_complete("t-SNE")
 tasklogger.log_complete("Multislice DR")
 
 
@@ -104,7 +98,7 @@ plt.tight_layout()
 plt.savefig("comparison_naive.png")
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(16, 4))
-scprep.plot.scatter2d(m_phate, label_prefix="PHATE", ticks=False,
+scprep.plot.scatter2d(m_phate_data, label_prefix="PHATE", ticks=False,
                       c=epoch, ax=ax1, legend=False)
 scprep.plot.scatter2d(dm_ms, label_prefix="DM", ticks=False,
                       c=epoch, ax=ax2, legend=False)

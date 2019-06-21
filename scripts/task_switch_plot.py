@@ -1,14 +1,14 @@
 import matplotlib
 matplotlib.use("Agg")  # noqa
 import numpy as np
-import phate
-import os
-import graphtools
-import graphtools.utils
 import matplotlib.pyplot as plt
-from scipy.io import loadmat
+
+import m_phate
 import scprep
-from multiscalegraph.kernel import multiscale_kernel
+import os
+
+from scipy.io import loadmat
+
 
 data_dir = os.path.expanduser(
     "data/task_switch/")
@@ -26,10 +26,9 @@ for filename in os.listdir(data_dir):
         val_loss = data['val_loss']
         val_acc = data['val_accuracy']
         trace = trace[n_skip::n_step]
+
         n = trace.shape[0]
         m = trace.shape[1]
-        trace = trace - np.mean(trace, axis=2)[:, :, None]
-        trace = trace / np.std(trace, axis=2)[:, :, None]
         neuron_ids = np.tile(np.arange(m), n)
         layer_ids = np.tile(data['layer'], n)
         epoch = np.repeat(np.arange(n) + n_skip, m)
@@ -37,20 +36,14 @@ for filename in os.listdir(data_dir):
         digit_activity = np.array([np.sqrt(np.sum(trace[:, :, digit_ids == digit]**2, axis=2))
                                    for digit in np.unique(digit_ids)])
         most_active_digit = np.argmax(digit_activity, axis=0).flatten()
+
         if filename in out:
-            ph = out[filename]['phate']
-        elif False:
-            ph = None
+            m_phate_data = out[filename]['phate']
         else:
-            K = multiscale_kernel(trace, knn=2, decay=5,
-                                  fixed_bandwidth=False,
-                                  interslice_knn=12, upweight=1)
-            graph = graphtools.Graph(
-                K, precomputed="affinity", n_landmark=3000,
-                n_svd=20, n_jobs=20)
-            phate_op = phate.PHATE(potential_method='sqrt', n_jobs=20)
-            ph = phate_op.fit_transform(graph)
-        out[filename] = {'phate': ph, 'epoch': epoch,
+            m_phate_op = m_phate.M_PHATE(interslice_knn=12)
+            m_phate_data = m_phate_op.fit_transform(trace)
+
+        out[filename] = {'phate': m_phate_data, 'epoch': epoch,
                          'most_active_digit': most_active_digit,
                          'neuron_ids': neuron_ids,
                          'layer_ids': layer_ids, 'loss': loss,
@@ -61,14 +54,7 @@ for filename in os.listdir(data_dir):
         print(filename, e)
         pass
 
-n = len(np.unique(data['task']))
-cmap = np.repeat(np.arange(n), 2)
-cmap = cmap * 2 + (np.arange(len(cmap)) + 1) % 2
-cmap = scprep.plot.tools.create_colormap(np.array(plt.cm.tab20.colors)[cmap])
-linspace = np.linspace(0, 1 / (n * 2 - 1), 40)
-cmap = matplotlib.colors.ListedColormap(cmap(np.concatenate([
-    linspace + 2 * i / (n * 2 - 1) for i in range(n)])))
-
+cmap = scprep.plot.colors.tab10_continuous(5)
 fig, ax = plt.subplots()
 scprep.plot.tools.generate_colorbar(cmap=cmap, ax=ax)
 plt.savefig("task_switch_colorbar.png")
@@ -105,10 +91,9 @@ for rowname, row in zip(rownames, axes):
 plt.tight_layout()
 plt.savefig("task_switch_phate.png")
 
+
 plt.rc('font', size=14)
 fig, axes = plt.subplots(1, 3, figsize=(14, 4))
-# ax.set_xscale('log')
-# ax.set_yscale('log')
 colors = {'adagrad': plt.cm.tab20.colors[:2],
           'adam': plt.cm.tab20.colors[6:8],
           'adam_rehearsal': plt.cm.tab20.colors[2:4],
@@ -131,7 +116,6 @@ for rowname, ax in zip(rownames, axes):
     ax.set_ylabel("Categorical cross entropy")
 
 axes[2].legend(bbox_to_anchor=[1.02, 0.8])
-
 plt.tight_layout()
 plt.savefig("task_switch_loss.png")
 

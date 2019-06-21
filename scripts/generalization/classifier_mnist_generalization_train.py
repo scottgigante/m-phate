@@ -1,12 +1,11 @@
 import numpy as np
 import tensorflow as tf
+
 import keras
-import os
-from scipy.io import savemat
+import m_phate
 import argparse
 
-from multiscalegraph.train import build_config, TraceHistory
-from multiscalegraph.data import load_mnist
+from scipy.io import savemat
 
 
 def restricted_float(x):
@@ -35,15 +34,15 @@ if (args.regularizer is not None and args.regualrize is None) or \
 
 if args.regularize is not None:
     reg_kwarg = 'activity_regularizer' if args.regularize == 'activity' else 'kernel_regularizer'
-    reg_fn = keras.regularizers.l1 if args.regualrizer == 'l1' else keras.regularizers.l2
-    weight = keras.regularizers.l1 if args.regualrizer == 'l1' else keras.regularizers.l2
+    reg_fn = keras.regularizers.l1 if args.regularizer == 'l1' else keras.regularizers.l2
+    weight = keras.regularizers.l1 if args.regularizer == 'l1' else keras.regularizers.l2
     regularization = {reg_kwarg: reg_fn(1e-4)}
 else:
     regularization = {}
 
-keras.backend.set_session(tf.Session(config=build_config()))
+keras.backend.set_session(tf.Session(config=m_phate.train.build_config()))
 
-x_train, x_test, y_train, y_test = load_mnist()
+x_train, x_test, y_train, y_test = m_phate.data.load_mnist()
 
 np.random.seed(42)
 tf.set_random_seed(42)
@@ -89,7 +88,7 @@ outputs = keras.layers.Dense(
 
 model_trace = keras.models.Model(inputs=inputs, outputs=[h1, h2, h3])
 
-trace = TraceHistory(trace_data, model_trace)
+trace = m_phate.train.TraceHistory(trace_data, model_trace)
 history = keras.callbacks.History()
 
 optimizer = keras.optimizers.Adam(lr=1e-5)
