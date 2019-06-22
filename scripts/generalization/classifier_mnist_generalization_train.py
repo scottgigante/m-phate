@@ -110,7 +110,7 @@ if args.regularize is not None:
     filename.extend([args.regularize, args.regularizer])
 if args.dropout is not None:
     filename.append("dropout")
-if args.scrambled is not None:
+if args.scrambled:
     filename.append("scrambled")
 if len(filename) == 0:
     filename.append("vanilla")
