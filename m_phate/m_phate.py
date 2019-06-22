@@ -44,6 +44,9 @@ class M_PHATE(phate.PHATE):
         `gamma=1` gives the PHATE log potential, `gamma=0` gives
         a square root potential.
 
+    normalize : bool, optional, default: True
+        If True, z-score the data
+
     n_pca : int, optional, default: 100
         Number of principal components to use for calculating
         neighborhoods. For extremely large datasets, using
@@ -105,11 +108,12 @@ class M_PHATE(phate.PHATE):
     def __init__(self, n_components=2,
                  intraslice_knn=2, interslice_knn=25,
                  decay=5, t='auto', gamma=0, n_landmark=4000,
-                 n_pca=100, n_svd=100,
+                 normalize=True, n_pca=100, n_svd=100,
                  n_jobs=-2, random_state=None, verbose=1,
                  **phate_kwargs):
         self.interslice_knn = interslice_knn
         self.n_svd = n_svd
+        self.normalize = normalize
         return super().__init__(
             n_components=n_components,
             knn=intraslice_knn, decay=decay, t=t,
@@ -122,16 +126,15 @@ class M_PHATE(phate.PHATE):
         return self.knn
 
     def fit(self, X):
-        tasklogger.log_start("M-PHATE")
         if not len(X.shape) == 3:
             raise ValueError("Expected X to be a tensor with three dimensions."
                              " Got shape {}".format(X.shape))
 
         self.X = X
 
-        # normalize
-        X = X - np.mean(X, axis=2)[:, :, None]
-        X = X / np.std(X, axis=2)[:, :, None]
+        if self.normalize:
+            X = X - np.mean(X, axis=2)[:, :, None]
+            X = X / np.std(X, axis=2)[:, :, None]
 
         tasklogger.log_start("multislice kernel")
         K = kernel.multislice_kernel(X,
@@ -142,7 +145,7 @@ class M_PHATE(phate.PHATE):
                                      distance=self.knn_dist)
         tasklogger.log_complete("multislice kernel")
         tasklogger.log_start("graph and diffusion operator")
-        graph = graphtools.Graph(
+        self.graph = graphtools.Graph(
             K,
             precomputed="affinity",
             n_landmark=self.n_landmark,
@@ -151,12 +154,36 @@ class M_PHATE(phate.PHATE):
             verbose=self.verbose,
             random_state=self.random_state,
             **(self.kwargs))
-        graph.data = self.X
+        self.graph.data = self.X
         self.diff_op
         tasklogger.log_complete("graph and diffusion operator")
-        result = super().fit(graph)
-        tasklogger.log_complete("M-PHATE")
+        result = super().fit(self.graph)
         return result
+
+    def fit_transform(self, X, **kwargs):
+        """Computes the diffusion operator and the position of the cells in the
+        embedding space
+
+        Parameters
+        ----------
+        X : array, shape=[n_samples, n_features]
+            input data with `n_samples` samples and `n_dimensions`
+            dimensions. Accepted data types: `numpy.ndarray`,
+            `scipy.sparse.spmatrix`, `pd.DataFrame`
+
+        kwargs : further arguments for `M_PHATE.transform()`
+            Keyword arguments as specified in :func:`~m_phate.M_PHATE.transform`
+
+        Returns
+        -------
+        embedding : array, shape=[n_samples, n_dimensions]
+            The cells embedded in a lower dimensional space using PHATE
+        """
+        tasklogger.log_start('M-PHATE')
+        self.fit(X)
+        embedding = self.transform(**kwargs)
+        tasklogger.log_complete('M-PHATE')
+        return embedding
 
     def _check_params(self):
         """Check M-PHATE parameters
@@ -170,9 +197,9 @@ class M_PHATE(phate.PHATE):
         ValueError : unacceptable choice of parameters
         """
         phate.utils.check_int(interslice_knn=self.interslice_knn,
-                              svd=self.svd)
+                              n_svd=self.n_svd)
         phate.utils.check_positive(interslice_knn=self.interslice_knn,
-                                   svd=self.svd)
+                                   n_svd=self.n_svd)
         return super()._check_params()
 
     def set_params(self, **params):
@@ -247,7 +274,7 @@ class M_PHATE(phate.PHATE):
             params['knn'] = params['intraslice_knn']
             del params['intraslice_knn']
 
-        if 'svd' in params and params['svd'] != self.svd:
+        if 'n_svd' in params and params['n_svd'] != self.n_svd:
             if self.n_svd is None or params['n_svd'] is None:
                 # need a different type of graph, reset entirely
                 self._reset_graph()
