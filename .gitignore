@@ -2,6 +2,7 @@ __pycache__
 *.pyc
 build
 dist
+data
 *egg-info
 .coverage
 .ipynb_checkpoints
