@@ -70,16 +70,16 @@ colnames = ['task', 'domain', 'class']
 rownames = ['adam_rehearsal', 'adagrad', 'adam']
 fig, axes = plt.subplots(len(rownames), len(colnames),
                          figsize=(4 * len(colnames), 4 * len(rownames)))
-for rowname, row in zip(rownames, axes):
-    for colname, ax in zip(colnames, row):
+for rowname, axis_row in zip(rownames, axes):
+    for colname, ax in zip(colnames, axis_row):
         filename = "incremental_{}_{}".format(colname, rowname)
         data = out[filename]
         label = 'rehearsal' if 'rehearsal' in rowname else rowname
         plot_idx = data['neuron_ids'] % 4 == 0
         scprep.plot.scatter2d(
             data['phate'][plot_idx], ax=ax,
-            xlabel='PHATE1' if rowname == rownames[-1] else None,
-            ylabel='PHATE2' if colname == colnames[0] else None,
+            xlabel='M-PHATE1' if rowname == rownames[-1] else None,
+            ylabel='M-PHATE2' if colname == colnames[0] else None,
             ticks=False,
             c=data['epoch'][plot_idx],
             cmap=cmap,
@@ -95,7 +95,7 @@ for rowname, row in zip(rownames, axes):
                 {'size': 12})
 
 plt.tight_layout()
-plt.savefig("task_switch_phate.png")
+plt.savefig("task_switch.png")
 
 
 plt.rc('font', size=14)
@@ -156,7 +156,7 @@ for rowname, row in zip(rownames, axes):
                 {'size': 12})
 
 plt.tight_layout()
-plt.savefig("task_switch_phate_layer1.png")
+plt.savefig("task_switch_layer1.png")
 
 
 plt.rc('font', size=14)
@@ -189,4 +189,4 @@ for rowname, row in zip(rownames, axes):
                 {'size': 12})
 
 plt.tight_layout()
-plt.savefig("task_switch_phate_layer2.png")
+plt.savefig("task_switch_layer2.png")

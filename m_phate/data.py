@@ -1,3 +1,5 @@
+scprep.utils.check_version("keras", "2.2")  # noqa
+
 import keras
 
 

@@ -145,10 +145,11 @@ class M_PHATE(phate.PHATE):
                                      distance=self.knn_dist)
         tasklogger.log_complete("multislice kernel")
         tasklogger.log_start("graph and diffusion operator")
+        n_landmark = self.n_landmark if self.n_landmark > K.shape[0] else None
         self.graph = graphtools.Graph(
             K,
             precomputed="affinity",
-            n_landmark=self.n_landmark,
+            n_landmark=n_landmark,
             n_svd=self.n_svd,
             n_jobs=self.n_jobs,
             verbose=self.verbose,

@@ -1,7 +1,3 @@
 Examples
 --------
 
-.. toctree::
-
-    autoencoder
-    classifier

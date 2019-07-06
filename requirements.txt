@@ -3,8 +3,7 @@ scipy>=0.18.0
 scikit-learn>=1.19.1
 matplotlib>=3.0
 pandas>=0.19,<0.24
-keras>=2.2
-tensorflow>=1.13
+scprep>=0.12.2
 joblib
 phate>=0.4.3
 graphtools>=1.1

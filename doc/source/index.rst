@@ -1,5 +1,5 @@
 ===========================================================================
-m-phate
+M-PHATE
 ===========================================================================
 
 .. raw:: html
@@ -26,13 +26,12 @@ m-phate
 
     <a href="https://github.com/scottgigante/m-phate/"><img src="https://img.shields.io/github/stars/scottgigante/m-phate.svg?style=social&label=Stars" alt="GitHub stars"></a>
 
-Visualization of the dynamics of changing data.
+Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visualization of changing data. To learn more about M-PHATE, you can read our preprint on arXiv in which we apply it to the evolution of neural networks over the course of training.
 
 .. toctree::
     :maxdepth: 2
 
     installation
-    examples/index
     reference
 
 Quick Start
@@ -40,9 +39,26 @@ Quick Start
 
 You can use `m-phate` as follows::
 
-	import m_phate
+    import numpy as np
+    import m_phate
+    import scprep
+    
+    # create fake data
+    n_time_steps = 100
+    n_points = 50
+    n_dim = 20
+    np.random.seed(42)
+    data = np.cumsum(np.random.normal(0, 1, (n_time_steps, n_points, n_dim)), axis=0)
+    
+    # embedding
+    m_phate_op = m_phate.M_PHATE()
+    m_phate_data = m_phate_op.fit_transform(data)
+    
+    # plot
+    time = np.repeat(np.arange(n_time_steps), n_points)
+    scprep.plot.scatter2d(m_phate_data, c=time)
 
 Help
 ====
 
-If you have any questions or require assistance using M-PHATE, please contact us at https://krishnaswamylab.org/get-help
+If you have any questions or require assistance using M-PHATE, please `file an issue <http://github.com/scottgigante/m-phate/issues>`_.

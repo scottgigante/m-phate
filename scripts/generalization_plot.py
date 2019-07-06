@@ -52,19 +52,21 @@ for filename in os.listdir(data_dir):
                      'val_loss': val_loss, 'digit_activity': digit_activity}
 
 plt.rc('font', size=14)
-fig, axes = plt.subplots(2, int(np.ceil(len(out) / 2)),
-                         figsize=(4 * len(out) // 2, 8))
 filenames = ['dropout', 'kernel_l1', 'kernel_l2',
              'vanilla', 'activity_l1', 'activity_l2', 'scrambled']
-for ax, filename in zip(axes.flatten(), filenames):
+nrow = 2
+ncol = int(np.ceil(len(filenames) / 2))
+fig, axes = plt.subplots(nrow, ncol,
+                         figsize=(4 * ncol, 4 * nrow))
+for i, ax, filename in zip(np.arange(len(filenames)), axes.flatten(), filenames):
     data = out[filename]
     title = " ".join([s.capitalize() for s in filename.split("_")]
                      if '_' in filename else [filename.capitalize()])
+    print_ylabel = i % ncol == 0
+    print_xlabel = i // ncol == nrow - 1
     scprep.plot.scatter2d(data['phate'], ax=ax,
-                          xlabel='PHATE1' if filename in filenames[
-                              4:] else None,
-                          ylabel='PHATE2' if filename in [
-                              filenames[0], filenames[4]] else None,
+                          xlabel='M-PHATE1' if print_xlabel else None,
+                          ylabel='M-PHATE2' if print_ylabel else None,
                           ticks=False,
                           c=data['most_active_digit'],
                           title=title, legend=False)
@@ -83,7 +85,7 @@ scprep.plot.tools.generate_legend(
     loc='center', fontsize=12)
 axes[-1, -1].set_axis_off()
 plt.tight_layout()
-plt.savefig("generalization_phate.png")
+plt.savefig("generalization.png")
 
 
 def calculate_entropy(X, bins=10):
@@ -105,7 +107,7 @@ for filename in ['dropout', 'kernel_l1', 'kernel_l2', 'vanilla', 'activity_l1', 
 performance_df = pd.DataFrame(columns=performance.keys())
 performance_df.loc['Memorization error'] = performance
 performance_df.loc['Visualization entropy'] = entropy
-performance_df
+print(performance_df)
 
 
 regr = linear_model.LinearRegression()
@@ -113,4 +115,4 @@ x = performance_df.loc['Visualization entropy'].values[:, None]
 y = performance_df.loc['Memorization error'].values[:, None]
 regr.fit(x, y)
 y_pred = regr.predict(x)
-r2_score(y, y_pred)
+print("R^2:", r2_score(y, y_pred))

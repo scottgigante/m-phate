@@ -2,6 +2,8 @@ import numpy as np
 import tensorflow as tf
 
 import m_phate
+import m_phate.train
+import m_phate.data
 import keras
 import argparse
 import os

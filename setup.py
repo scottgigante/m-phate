@@ -7,9 +7,8 @@ install_requires = [
     'scipy>=0.18.0',
     'scikit-learn>=0.19.1',
     'pandas>=0.19.0,<0.24',
-    'keras>=2.2',
-    'tensorflow>=1.13',
     'joblib',
+    'scprep>=0.12.2',
     'phate>=0.4.3',
     'graphtools>=1.1'
 ]
@@ -17,7 +16,9 @@ install_requires = [
 test_requires = [
     'nose2',
     'coverage',
-    'coveralls'
+    'coveralls',
+    'keras>=2.2',
+    'tensorflow>=1.13',
 ]
 
 doc_requires = [

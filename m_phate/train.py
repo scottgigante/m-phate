@@ -1,6 +1,11 @@
-import tensorflow as tf
 import numpy as np
 import os
+import scprep
+
+scprep.utils.check_version("keras", "2.2")  # noqa
+scprep.utils.check_version("tensorflow", "1.13")  # noqa
+
+import tensorflow as tf
 import keras
 
 

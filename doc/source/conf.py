@@ -28,10 +28,10 @@ sys.path.insert(0, root_dir)
 # print(sys.path)
 
 # Copy ipython notebooks
-dest_dir = "examples"
-for file in glob.glob(os.path.join(root_dir, 'examples', '*.ipynb')):
-    print("Copy {} to {}".format(file, dest_dir))
-    shutil.copy(file, dest_dir)
+# dest_dir = "examples"
+# for file in glob.glob(os.path.join(root_dir, 'examples', '*.ipynb')):
+#     print("Copy {} to {}".format(file, dest_dir))
+#     shutil.copy(file, dest_dir)
 
 # -- General configuration ------------------------------------------------
 

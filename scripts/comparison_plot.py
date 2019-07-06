@@ -157,7 +157,8 @@ df10 = pd.DataFrame({name: [evaluate_within_slice(Y, k=10), evaluate_between_sli
 df40 = pd.DataFrame({name: [evaluate_within_slice(Y, k=40), evaluate_between_slice(Y, k=40)] for name, Y in embeddings.items()},
                     index=['intraslice', 'interslice'])
 
-df10.round(2).to_latex().replace('interslice', 'Interslice, $k=10$').replace(
-    'intraslice', 'Intraslice, $k=10$').split('\n')[4:6]
-df40.round(2).to_latex().replace('interslice', 'Interslice, $k=40$').replace(
-    'intraslice', 'Intraslice, $k=40$').split('\n')[4:6]
+print("k=10")
+print(df10)
+print()
+print("k=40")
+print(df40)

@@ -57,7 +57,7 @@ scprep.plot.scatter2d(m_phate_data, c=most_active_digit, ax=ax3,
                       title='Most active digit',
                       ticks=False, label_prefix="M-PHATE")
 plt.tight_layout()
-plt.savefig("demonstration_phate.png")
+plt.savefig("demonstration.png")
 
 ###############
 # 3D plot
@@ -68,4 +68,4 @@ m_phate_data = m_phate_op.transform()
 scprep.plot.rotate_scatter3d(m_phate_data, c=most_active_digit,
                              title='Most active digit',
                              ticks=False, label_prefix="M-PHATE",
-                             filename="demonstration_phate.gif")
+                             filename="demonstration.gif")
