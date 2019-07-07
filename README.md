@@ -30,7 +30,7 @@ import scprep
 # create fake data
 n_time_steps = 100
 n_points = 50
-n_dim = 20
+n_dim = 25
 np.random.seed(42)
 data = np.cumsum(np.random.normal(0, 1, (n_time_steps, n_points, n_dim)), axis=0)
 
@@ -40,8 +40,10 @@ m_phate_data = m_phate_op.fit_transform(data)
 
 # plot
 time = np.repeat(np.arange(n_time_steps), n_points)
-scprep.plot.scatter2d(m_phate_data, c=time)
+scprep.plot.scatter2d(m_phate_data, c=time, ticks=False, label_prefix="M-PHATE")
 ```
+
+[!Example embedding](example.png)
 
 ### Network training
 
