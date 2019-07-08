@@ -130,11 +130,10 @@ class M_PHATE(phate.PHATE):
             raise ValueError("Expected X to be a tensor with three dimensions."
                              " Got shape {}".format(X.shape))
 
-        self.X = X
-
         if self.normalize:
             X = X - np.mean(X, axis=2)[:, :, None]
-            X = X / np.std(X, axis=2)[:, :, None]
+            std = np.std(X, axis=2)[:, :, None]
+            X = X / np.where(std > 0, std, 1)
 
         tasklogger.log_start("multislice kernel")
         K = kernel.multislice_kernel(X,
@@ -142,10 +141,11 @@ class M_PHATE(phate.PHATE):
                                      decay=self.decay,
                                      interslice_knn=self.interslice_knn,
                                      n_pca=self.n_pca,
-                                     distance=self.knn_dist)
+                                     distance=self.knn_dist,
+                                     n_jobs=self.n_jobs)
         tasklogger.log_complete("multislice kernel")
         tasklogger.log_start("graph and diffusion operator")
-        n_landmark = self.n_landmark if self.n_landmark > K.shape[0] else None
+        n_landmark = self.n_landmark if self.n_landmark < K.shape[0] else None
         self.graph = graphtools.Graph(
             K,
             precomputed="affinity",
@@ -155,7 +155,6 @@ class M_PHATE(phate.PHATE):
             verbose=self.verbose,
             random_state=self.random_state,
             **(self.kwargs))
-        self.graph.data = self.X
         self.diff_op
         tasklogger.log_complete("graph and diffusion operator")
         result = super().fit(self.graph)
