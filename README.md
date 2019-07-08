@@ -71,9 +71,9 @@ trace_data = x_test[np.concatenate(trace_idx)]
 # build neural network
 inputs = keras.layers.Input(
     shape=(x_train.shape[1],), dtype='float32', name='inputs')
-h1 = keras.layers.Dense(64, activation='relu', name='h1')(inputs)
-h2 = keras.layers.Dense(64, activation='relu', name='h2')(h1)
-h3 = keras.layers.Dense(64, activation='relu', name='h3')(h2)
+h1 = keras.layers.Dense(64, activation='tanh', name='h1')(inputs)
+h2 = keras.layers.Dense(64, activation='tanh', name='h2')(h1)
+h3 = keras.layers.Dense(64, activation='tanh', name='h3')(h2)
 outputs = keras.layers.Dense(10, activation='softmax', name='output_all')(h3)
 
 # build trace model helper
@@ -87,12 +87,12 @@ model.compile(optimizer='adam', loss='categorical_crossentropy',
 
 # train network
 model.fit(x_train, y_train, batch_size=128, epochs=200,
-          verbose=0, callbacks=[trace],
+          verbose=1, callbacks=[trace],
           validation_data=(x_test,
                            y_test))
 
 # extract trace data
-trace_data = trace.trace
+trace_data = np.array(trace.trace)
 epoch = np.repeat(np.arange(trace_data.shape[0]), trace_data.shape[1])
 
 # apply M-PHATE
