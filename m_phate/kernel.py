@@ -26,14 +26,52 @@ def distance_to_kernel(D, bandwidth):
     return A
 
 
+def _multislice_kernel(data, knn=2, decay=5,
+                       interslice_knn=25,
+                       n_pca=100,
+                       p=list,
+                       kernel_fn=graph_kernel,
+                       pdist_fn=square_pdist,
+                       knn_fn=knn_dist,
+                       kernel_dist_fn=distance_to_kernel,
+                       **kwargs):
+    n = data.shape[0]
+    m = data.shape[1]
+    N = n * m
+    K = sparse.lil_matrix((N, N))
+
+    kernels = p(kernel_fn(
+        x, knn=knn, decay=decay, **kwargs, n_jobs=1)
+        for x in data)
+    for i, G_K in enumerate(kernels):
+        # plug into K
+        K = graphtools.utils.set_submatrix(K, np.arange(
+            i * m, (i + 1) * m), np.arange(i * m, (i + 1) * m), G_K)
+
+    # set interslice fixed bandwidth
+    interslice_dist = p(pdist_fn(data[:, vertex, :])
+                        for vertex in range(data.shape[1]))
+    bandwidths = p(knn_fn(D, interslice_knn)
+                   for D in interslice_dist)
+    bandwidth = np.mean(bandwidths)
+    interslice_kernel = p(kernel_dist_fn(
+        D, bandwidth)
+        for D in interslice_dist)
+
+    # Add interslice links
+    for vertex, A in enumerate(interslice_kernel):
+        # plug into K
+        K = graphtools.utils.set_submatrix(
+            K, np.arange(n) * m + vertex, np.arange(n) * m + vertex, A)
+    return K
+
+
 def multislice_kernel(data, knn=2, decay=5,
                       interslice_knn=25,
                       n_pca=100,
                       n_jobs=20, **kwargs):
     n = data.shape[0]
     m = data.shape[1]
-    N = n * m
-    K = sparse.lil_matrix((N, N))
 
     if n_pca is not None and n_pca < data.shape[2]:
         data = data.reshape(n * m, -1)
@@ -41,30 +79,21 @@ def multislice_kernel(data, knn=2, decay=5,
         data = data.reshape(n, m, n_pca)
 
     # build within slice graphs
-    with Parallel(n_jobs=n_jobs) as p:
-        kernels = p(delayed(graph_kernel)(
-            x, knn=knn, decay=decay, **kwargs, n_jobs=1)
-            for x in data)
-        for i, G_K in enumerate(kernels):
-            # plug into K
-            K = graphtools.utils.set_submatrix(K, np.arange(
-                i * m, (i + 1) * m), np.arange(i * m, (i + 1) * m), G_K)
-
-        # set interslice fixed bandwidth
-        interslice_dist = p(delayed(square_pdist)(data[:, vertex, :])
-                            for vertex in range(data.shape[1]))
-        bandwidths = p(delayed(knn_dist)(D, interslice_knn)
-                       for D in interslice_dist)
-        bandwidth = np.mean(bandwidths)
-        interslice_kernel = p(delayed(distance_to_kernel)(
-            D, bandwidth)
-            for D in interslice_dist)
-
-        # Add interslice links
-        for vertex, A in enumerate(interslice_kernel):
-            # plug into K
-            K = graphtools.utils.set_submatrix(
-                K, np.arange(n) * m + vertex, np.arange(n) * m + vertex, A)
+    if n_jobs == 1:
+        K = _multislice_kernel(data, knn=2, decay=5,
+                               interslice_knn=25,
+                               n_pca=100)
+    else:
+        with Parallel(n_jobs=n_jobs) as p:
+            K = _multislice_kernel(
+                data, knn=2, decay=5,
+                interslice_knn=25,
+                n_pca=100,
+                p=p,
+                kernel_fn=delayed(graph_kernel),
+                pdist_fn=delayed(square_pdist),
+                knn_fn=delayed(knn_dist),
+                kernel_dist_fn=delayed(distance_to_kernel))
     return K.tocsr()
 
 
