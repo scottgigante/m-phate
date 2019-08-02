@@ -16,13 +16,21 @@ from sklearn.metrics import r2_score
 
 try:
     data_dir = os.path.expanduser(sys.argv[1])
-except KeyError:
+except IndexError:
     data_dir = "./data"
+    
+
+try:
+    dataset = sys.argv[2]
+except IndexError:
+    dataset = "mnist"
 
 data_dir = os.path.join(data_dir, "generalization")
 
 out = {}
 for filename in os.listdir(data_dir):
+    if dataset not in filename:
+        continue
     data = loadmat(os.path.join(data_dir, filename))
     filename = filename.split('.')[0].split('_')
     filename = "_".join(filename[2:])
@@ -85,7 +93,7 @@ scprep.plot.tools.generate_legend(
     loc='center', fontsize=12)
 axes[-1, -1].set_axis_off()
 plt.tight_layout()
-plt.savefig("generalization.png")
+plt.savefig("{}_generalization.png".format(dataset))
 
 
 def calculate_entropy(X, bins=10):

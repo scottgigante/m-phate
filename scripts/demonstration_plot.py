@@ -15,7 +15,7 @@ from scipy.io import loadmat
 ###############
 try:
     data_dir = os.path.expanduser(sys.argv[1])
-except KeyError:
+except IndexError:
     data_dir = "./data"
 
 data = loadmat(os.path.join(
