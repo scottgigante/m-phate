@@ -20,12 +20,15 @@ def restricted_float(x):
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--dataset', choices=['mnist', 'cifar'], default='mnist', type=str)
 parser.add_argument(
     '--regularizer', '-l', choices=['l1', 'l2'], default=None, type=str)
 parser.add_argument('--regularize', '-r',
                     choices=['kernel', 'activity'], default=None, type=str)
 parser.add_argument('--dropout', '-d', type=restricted_float, default=None)
 parser.add_argument('--scrambled', '-s', action='store_true', default=False)
+parser.add_argument('--white-noise', '-w', action='store_true', default=False)
+parser.add_argument('--sample-train-data', '-t', action='store_true', default=False)
 parser.add_argument('--batch-size', '-b', type=int, default=256)
 parser.add_argument('--epochs', '-e', type=int, default=300)
 parser.add_argument('--save-dir', '-S', type=str, default="./data")
@@ -46,24 +49,43 @@ else:
 
 keras.backend.set_session(tf.Session(config=m_phate.train.build_config()))
 
-x_train, x_test, y_train, y_test = m_phate.data.load_mnist()
+if args.dataset == 'mnist':
+    x_train, x_test, y_train, y_test = m_phate.data.load_mnist()
+elif args.dataset == 'cifar':
+    x_train, x_test, y_train, y_test = m_phate.data.load_cifar()
+else:
+    raise ValueError
+    
 
+np.random.seed(42)
+# corrupt data
+if args.white_noise:
+    x_train = np.random.normal(0,1,x_train.shape)
+
+# select data for epoch sampling
+if args.sample_train_data:
+    x_sample, y_sample = x_train, y_train
+else:
+    x_sample, y_sample = x_test, y_test
+
+# reseed RNG to get the same selection each time
 np.random.seed(42)
 tf.set_random_seed(42)
 trace_idx = []
 for i in range(10):
     trace_idx.append(np.random.choice(np.argwhere(
-        y_test[:, i] == 1).flatten(), 10, replace=False))
+        y_sample[:, i] == 1).flatten(), 10, replace=False))
 
 trace_idx = np.concatenate(trace_idx)
-trace_data = x_test[trace_idx]
+trace_data = x_sample[trace_idx]
 
+# corrupt labels after selection to avoid biasing selection
 if args.scrambled:
     y_train = np.random.permutation(y_train)
 
 lrelu = keras.layers.LeakyReLU(alpha=0.1)
 if args.dropout is not None:
-    dropout = keras.layers.Dropout(0.5)
+    dropout = keras.layers.Dropout(rate=0.5)
 
 inputs = keras.layers.Input(
     shape=(x_train.shape[1],), dtype='float32', name='inputs')
@@ -114,12 +136,14 @@ if args.dropout is not None:
     filename.append("dropout")
 if args.scrambled:
     filename.append("scrambled")
+if args.white_noise:
+    filename.append("white_noise")
 if len(filename) == 0:
     filename.append("vanilla")
 filename = "_".join(filename)
 
 savemat(
-    os.path.join(args.save_dir, "generalization/mnist_classifier_{}.mat".format(filename)), {
+    os.path.join(args.save_dir, "generalization/{}_classifier_{}.mat".format(args.dataset, filename)), {
         'trace': trace.trace, 'digit': y_test.argmax(1)[trace_idx],
         'layer': np.concatenate([np.repeat(i, int(layer.shape[1]))
                                  for i, layer in enumerate(model_trace.outputs)]),
