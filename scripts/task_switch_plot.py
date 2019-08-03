@@ -2,6 +2,7 @@ import matplotlib
 matplotlib.use("Agg")  # noqa
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import m_phate
 import scprep
@@ -9,6 +10,8 @@ import os
 import sys
 
 from scipy.io import loadmat
+import scipy.stats
+from sklearn import cluster, metrics
 
 
 try:
@@ -54,7 +57,7 @@ for filename in os.listdir(data_dir):
                          'neuron_ids': neuron_ids,
                          'layer_ids': layer_ids, 'loss': loss,
                          'val_loss': val_loss, 'val_accuracy': val_acc,
-                         'task': np.repeat(data['task'], m),
+                         'task': np.repeat(data['task'][0,n_skip::n_step], m),
                          'digit_activity': digit_activity}
     except Exception as e:
         print(filename, e)
@@ -190,3 +193,45 @@ for rowname, row in zip(rownames, axes):
 
 plt.tight_layout()
 plt.savefig("task_switch_layer2.png")
+
+
+####################
+# Quantification
+####################
+
+
+def ari(x, y, k, seed=None):
+    clusters_x = cluster.KMeans(k, random_state=seed).fit_predict(x)
+    clusters_y = cluster.KMeans(k, random_state=seed).fit_predict(y)
+    return metrics.adjusted_rand_score(clusters_x, clusters_y)
+
+
+def ari_score(data, min_clusters=3, max_clusters=8, n_rep=20, n_jobs=20):
+    phate = data['phate']
+    epoch = data['epoch']
+    task = data['task']
+    scores = []
+    with Parallel(n_jobs) as p:
+        for i in range(np.max(task).astype(int)):
+            pre_switch_epoch = np.max(epoch[task==i])
+            post_switch_epoch = np.min(epoch[task==i+1])
+            epoch_scores = []
+            for k in range(min_clusters, max_clusters+1):
+                epoch_scores.append(p(delayed(ari)(phate[epoch==pre_switch_epoch],
+                                                   phate[epoch==post_switch_epoch+3],
+                                                   k=k, seed=seed)
+                                      for seed in range(n_rep)))
+            scores.append(epoch_scores)
+    return np.mean(scores)
+
+
+df = pd.DataFrame(columns=['loss', 'ari'])
+for colname in colnames:
+    for rowname in rownames:
+        filename = "incremental_{}_{}".format(colname, rowname)
+        data = out[filename]
+        df.loc[filename] = [data['val_loss'].flatten()[-1],
+                            ari_score(data)]
+
+print(df.round(3))
+print("rho = {}".format(scipy.stats.pearsonr(df['loss'], df['ari'])[0]))

@@ -156,7 +156,7 @@ for i, (train_idx, cols) in enumerate(zip(task_idxs, col_idxs)):
     val_loss.append(history.history['val_loss'])
     accuracy.append(history.history['{}_accuracy'.format(metric_name)])
     val_accuracy.append(history.history['val_{}_accuracy'.format(metric_name)])
-    task.append(np.full_like(history.history['loss'], i, dtype=int))
+    task = np.concatenate([task, np.full(shape=(len(trace.trace)-len(task),), fill_value=i)])
 
 
 filename = [args.scheme, args.optimizer]
@@ -173,5 +173,5 @@ savemat(
         'val_loss': np.concatenate(val_loss),
         'accuracy': np.concatenate(accuracy),
         'val_accuracy': np.concatenate(val_accuracy),
-        'task': np.concatenate(task)
+        'task': task
     })
