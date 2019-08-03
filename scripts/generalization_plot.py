@@ -11,8 +11,7 @@ import os
 import sys
 
 from scipy.io import loadmat
-from sklearn import linear_model
-from sklearn.metrics import r2_score
+import scipy.stats
 
 try:
     data_dir = os.path.expanduser(sys.argv[1])
@@ -118,9 +117,6 @@ performance_df.loc['Visualization entropy'] = entropy
 print(performance_df)
 
 
-regr = linear_model.LinearRegression()
-x = performance_df.loc['Visualization entropy'].values[:, None]
-y = performance_df.loc['Memorization error'].values[:, None]
-regr.fit(x, y)
-y_pred = regr.predict(x)
-print("R^2:", r2_score(y, y_pred))
+print("rho = {}".format(scipy.stats.pearsonr(
+    performance_df.loc['Visualization entropy'],
+    performance_df.loc['Memorization error'])[0])
