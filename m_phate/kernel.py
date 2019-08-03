@@ -26,8 +26,10 @@ def distance_to_kernel(D, bandwidth):
     return A
 
 
-def _multislice_kernel(data, knn=2, decay=5,
+def _multislice_kernel(data,
+                       intraslice_knn=2,
                        interslice_knn=25,
+                       decay=5,
                        n_pca=100,
                        p=list,
                        kernel_fn=graph_kernel,
@@ -41,7 +43,7 @@ def _multislice_kernel(data, knn=2, decay=5,
     K = sparse.lil_matrix((N, N))
 
     kernels = p(kernel_fn(
-        x, knn=knn, decay=decay, **kwargs, n_jobs=1)
+        x, knn=intraslice_knn, decay=decay, **kwargs, n_jobs=1)
         for x in data)
     for i, G_K in enumerate(kernels):
         # plug into K
@@ -66,8 +68,10 @@ def _multislice_kernel(data, knn=2, decay=5,
     return K
 
 
-def multislice_kernel(data, knn=2, decay=5,
+def multislice_kernel(data,
+                      intraslice_knn=2,
                       interslice_knn=25,
+                      decay=5,
                       n_pca=100,
                       n_jobs=20, **kwargs):
     n = data.shape[0]
@@ -80,15 +84,19 @@ def multislice_kernel(data, knn=2, decay=5,
 
     # build within slice graphs
     if n_jobs == 1:
-        K = _multislice_kernel(data, knn=2, decay=5,
-                               interslice_knn=25,
-                               n_pca=100)
+        K = _multislice_kernel(data,
+                               intraslice_knn=intraslice_knn,
+                               interslice_knn=interslice_knn,
+                               decay=decay,
+                               n_pca=n_pca)
     else:
         with Parallel(n_jobs=n_jobs) as p:
             K = _multislice_kernel(
-                data, knn=2, decay=5,
-                interslice_knn=25,
-                n_pca=100,
+                data,
+                intraslice_knn=intraslice_knn,
+                interslice_knn=interslice_knn,
+                decay=decay,
+                n_pca=n_pca,
                 p=p,
                 kernel_fn=delayed(graph_kernel),
                 pdist_fn=delayed(square_pdist),

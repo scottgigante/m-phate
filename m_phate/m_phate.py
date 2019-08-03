@@ -110,14 +110,21 @@ class M_PHATE(phate.PHATE):
                  decay=5, t='auto', gamma=0, n_landmark=4000,
                  normalize=True, n_pca=100, n_svd=100,
                  n_jobs=-2, random_state=None, verbose=1,
+                 knn=None,
                  **phate_kwargs):
+        if knn is not None:
+            warnings.warn("Argument `knn` is ambiguous and ignored. "
+                          "Use `intraslice_knn` or `interslice_knn`.",
+                          UserWarning)
         self.interslice_knn = interslice_knn
         self.n_svd = n_svd
         self.normalize = normalize
         return super().__init__(
             n_components=n_components,
-            knn=intraslice_knn, decay=decay, t=t,
-            n_pca=n_pca, gamma=gamma, n_landmark=n_landmark,
+            knn=intraslice_knn,
+            decay=decay, t=t,
+            n_pca=n_pca, gamma=gamma,
+            n_landmark=n_landmark,
             n_jobs=n_jobs, random_state=random_state,
             verbose=verbose, **phate_kwargs)
 
@@ -135,9 +142,9 @@ class M_PHATE(phate.PHATE):
 
         tasklogger.log_start("multislice kernel")
         K = kernel.multislice_kernel(X,
-                                     knn=self.intraslice_knn,
-                                     decay=self.decay,
+                                     intraslice_knn=self.intraslice_knn,
                                      interslice_knn=self.interslice_knn,
+                                     decay=self.decay,
                                      n_pca=self.n_pca,
                                      distance=self.knn_dist,
                                      n_jobs=self.n_jobs)
