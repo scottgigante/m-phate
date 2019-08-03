@@ -144,7 +144,7 @@ filename = "_".join(filename)
 
 savemat(
     os.path.join(args.save_dir, "generalization/{}_classifier_{}.mat".format(args.dataset, filename)), {
-        'trace': trace.trace, 'digit': y_test.argmax(1)[trace_idx],
+        'trace': trace.trace, 'digit': y_sample.argmax(1)[trace_idx],
         'layer': np.concatenate([np.repeat(i, int(layer.shape[1]))
                                  for i, layer in enumerate(model_trace.outputs)]),
         'loss': history.history['categorical_crossentropy'],
