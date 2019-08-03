@@ -3,7 +3,7 @@ import graphtools
 import tasklogger
 import numpy as np
 
-from . import kernel
+from . import kernel, utils
 
 
 class M_PHATE(phate.PHATE):
@@ -131,9 +131,7 @@ class M_PHATE(phate.PHATE):
                              " Got shape {}".format(X.shape))
 
         if self.normalize:
-            X = X - np.mean(X, axis=2)[:, :, None]
-            std = np.std(X, axis=2)[:, :, None]
-            X = X / np.where(std > 0, std, 1)
+            X = utils.normalize(X)
 
         tasklogger.log_start("multislice kernel")
         K = kernel.multislice_kernel(X,
@@ -270,7 +268,7 @@ class M_PHATE(phate.PHATE):
             reset_kernel = True
             del params['interslice_knn']
 
-        if 'intraslice_knn' in params and params['intraslice_knn'] != self.intraslice_knn:
+        if 'intraslice_knn' in params:
             params['knn'] = params['intraslice_knn']
             del params['intraslice_knn']
 
