@@ -1,14 +1,27 @@
 # M-PHATE
 
-Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visualization of changing data. To learn more about M-PHATE, you can read our preprint on arXiv in which we apply it to the evolution of neural networks over the course of training.
+![Demonstration M-PHATE plot](demonstration.png)
 
-* [Installation](#installation)
-* [Usage](#usage)
-  * [Basic Usage Example](#basic-usage-example)
-  * [Network Training](#network-training)
-* [Parameter Tuning](#parameter-tuning)
-* [Figure Reproduction](#figure-reproduction)
-* [Help](#help)
+Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visualization of time-evolving data. To learn more about M-PHATE, you can read our preprint on arXiv in which we apply it to the evolution of neural networks over the course of training. Above we show a demonstration of M-PHATE applied to a 3-layer MLP over 300 epochs of training, colored by epoch (left), hidden layer (center) and the digit label that most strongly activates each hidden unit (right).
+
+* [How it works](#How-it-works)
+* [Installation](#Installation)
+* [Usage](#Usage)
+  * [Basic Usage Example](#Basic-usage-example)
+  * [Network Training](#Network-training)
+* [Parameter Tuning](#Parameter-tuning)
+* [Figure Reproduction](#Figure-reproduction)
+* [Help](#Help)
+
+## How it works
+
+Multislice PHATE (M-PHATE) combines a novel multislice kernel construction with the [PHATE visualization](https://github.com/KrishnaswamyLab/PHATE). Our kernel captures the dynamics of an evolving graph structure, that when when visualized, gives unique intuition about the evolution of a system; in our preprint on arXiv, we show this applied to a neural network over the course of training and re-training. We compare M-PHATE to other dimensionality reduction techniques, showing that the combined construction of the multislice kernel and the use of PHATE provide significant improvements to visualization. In two vignettes, we demonstrate the use M-PHATE on established training tasks and learning methods in continual learning, and in regularization techniques commonly used to improve generalization performance.
+
+The multislice kernel used in M-PHATE consists of building graphs over time slices of data (e.g. epochs in neural network training) and then connecting these slices by connecting each point to itself over time, weighted by its similarity. The result is a highly sparse, structured kernel which provides insight into the evolving structure of the data.
+
+![Example of multislice graph](multislice_graph.png)
+
+![Example of multislice kernel](multislice_kernel.png)
 
 ## Installation
 
@@ -139,6 +152,10 @@ python scripts/demonstration_plot.py $DATA_DIR
 python scripts/comparison_plot.py $DATA_DIR
 python scripts/generalization_plot.py $DATA_DIR
 python scripts/task_switch_plot.py $DATA_DIR
+
+# generalization plot using training data
+./scripts/generalization/generalization_train.sh ${DATA_DIR}/train_data --sample-train-data
+mkdir train_data; cd train_data; python ../scripts/generalization_plot.py ${DATA_DIR}/train_data; cd ..
 ```
 
 ## TODO
