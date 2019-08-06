@@ -4,6 +4,8 @@
 
 Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visualization of time-evolving data. To learn more about M-PHATE, you can read our preprint on arXiv in which we apply it to the evolution of neural networks over the course of training. Above we show a demonstration of M-PHATE applied to a 3-layer MLP over 300 epochs of training, colored by epoch (left), hidden layer (center) and the digit label that most strongly activates each hidden unit (right).
 
+### Table of Contents
+
 * [How it works](#How-it-works)
 * [Installation](#Installation)
 * [Usage](#Usage)
@@ -56,7 +58,7 @@ time = np.repeat(np.arange(n_time_steps), n_points)
 scprep.plot.scatter2d(m_phate_data, c=time, ticks=False, label_prefix="M-PHATE")
 ```
 
-[!Example embedding](example.png)
+![Example embedding](example.png)
 
 ### Network training
 
@@ -82,11 +84,12 @@ trace_idx = [np.random.choice(np.argwhere(y_test[:, i] == 1).flatten(),
 trace_data = x_test[np.concatenate(trace_idx)]
 
 # build neural network
+lrelu = keras.layers.LeakyReLU(alpha=0.1)
 inputs = keras.layers.Input(
     shape=(x_train.shape[1],), dtype='float32', name='inputs')
-h1 = keras.layers.Dense(64, activation='tanh', name='h1')(inputs)
-h2 = keras.layers.Dense(64, activation='tanh', name='h2')(h1)
-h3 = keras.layers.Dense(64, activation='tanh', name='h3')(h2)
+h1 = keras.layers.Dense(128, activation=lrelu, name='h1')(inputs)
+h2 = keras.layers.Dense(128, activation=lrelu, name='h2')(h1)
+h3 = keras.layers.Dense(128, activation=lrelu, name='h3')(h2)
 outputs = keras.layers.Dense(10, activation='softmax', name='output_all')(h3)
 
 # build trace model helper
