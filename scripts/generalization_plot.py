@@ -59,8 +59,8 @@ for filename in os.listdir(data_dir):
                      'val_loss': val_loss, 'digit_activity': digit_activity}
 
 plt.rc('font', size=14)
-filenames = ['dropout', 'kernel_l1', 'kernel_l2',
-             'vanilla', 'activity_l1', 'activity_l2', 'scrambled']
+filenames = ['dropout', 'kernel_l1', 'kernel_l2', 'vanilla', 
+             'activity_l1', 'activity_l2', 'random_labels', 'random_pixels']
 nrow = 2
 ncol = int(np.ceil(len(filenames) / 2))
 fig, axes = plt.subplots(nrow, ncol,
@@ -88,35 +88,33 @@ for i, ax, filename in zip(np.arange(len(filenames)), axes.flatten(), filenames)
 
 scprep.plot.tools.generate_legend(
     cmap={i: plt.cm.tab10.colors[i] for i in range(10)},
-    ax=axes[-1, -1], title='Most active digit',
-    loc='center', fontsize=12)
-axes[-1, -1].set_axis_off()
+    ax=axes[0, -1], title='Most active digit',
+    bbox_to_anchor=(1,1.03), fontsize=12)
 plt.tight_layout()
 plt.savefig("{}_generalization.png".format(dataset))
 
 
-def calculate_entropy(X, bins=10):
-    hist = np.histogram2d(X[:, 0], X[:, 1], bins=bins)[0]
-    p = hist / np.sum(hist)
-    return np.sum(-p * np.where(p > 0, np.log2(p), 0))
+def calculate_variance(X, epoch):
+    var = [np.cov(X[epoch==e].T).trace() for e in np.unique(epoch)]
+    return np.sum(var)
 
 
 performance = {}
-entropy = {}
-for filename in ['dropout', 'kernel_l1', 'kernel_l2', 'vanilla', 'activity_l1', 'activity_l2', 'scrambled']:
+variance = {}
+for filename in filenames:
     data = out[filename]
     title = " ".join([s.capitalize() for s in filename.split("_")]
                      if '_' in filename else [filename.capitalize()])
     performance[title] = np.round(
         data['val_loss'][0, -1] - data['loss'][0, -1], 2)
-    entropy[title] = np.round(calculate_entropy(data['phate']), 2)
+    variance[title] = np.round(calculate_variance(data['phate'], data['epoch']), 2)
 
 performance_df = pd.DataFrame(columns=performance.keys())
 performance_df.loc['Memorization error'] = performance
-performance_df.loc['Visualization entropy'] = entropy
+performance_df.loc['Visualization variance'] = variance
 print(performance_df)
 
 
-print("rho = {}".format(scipy.stats.pearsonr(
-    performance_df.loc['Visualization entropy'],
-    performance_df.loc['Memorization error'])[0])
+print("rho = {}".format(scipy.stats.spearmanr(
+    performance_df.loc['Visualization variance'],
+    performance_df.loc['Memorization error'])[0]))

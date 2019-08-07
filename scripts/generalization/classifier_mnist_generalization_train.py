@@ -26,12 +26,12 @@ parser.add_argument(
 parser.add_argument('--regularize', '-r',
                     choices=['kernel', 'activity'], default=None, type=str)
 parser.add_argument('--dropout', '-d', type=restricted_float, default=None)
-parser.add_argument('--scrambled', '-s', action='store_true', default=False)
-parser.add_argument('--white-noise', '-w', action='store_true', default=False)
+parser.add_argument('--random-labels', action='store_true', default=False)
+parser.add_argument('--random-pixels', action='store_true', default=False)
 parser.add_argument('--sample-train-data', '-t', action='store_true', default=False)
 parser.add_argument('--batch-size', '-b', type=int, default=256)
 parser.add_argument('--epochs', '-e', type=int, default=300)
-parser.add_argument('--save-dir', '-S', type=str, default="./data")
+parser.add_argument('--save-dir', '-s', type=str, default="./data")
 
 args = parser.parse_args()
 
@@ -59,8 +59,9 @@ else:
 
 np.random.seed(42)
 # corrupt data
-if args.white_noise:
+if args.random_pixels:
     x_train = np.random.normal(0,1,x_train.shape)
+    x_test = np.random.normal(0,1,x_test.shape)
 
 # select data for epoch sampling
 if args.sample_train_data:
@@ -80,7 +81,7 @@ trace_idx = np.concatenate(trace_idx)
 trace_data = x_sample[trace_idx]
 
 # corrupt labels after selection to avoid biasing selection
-if args.scrambled:
+if args.random_labels:
     y_train = np.random.permutation(y_train)
 
 lrelu = keras.layers.LeakyReLU(alpha=0.1)
@@ -134,10 +135,10 @@ if args.regularize is not None:
     filename.extend([args.regularize, args.regularizer])
 if args.dropout is not None:
     filename.append("dropout")
-if args.scrambled:
-    filename.append("scrambled")
-if args.white_noise:
-    filename.append("white_noise")
+if args.random_pixels:
+    filename.append("random_pixels")
+if args.random_labels:
+    filename.append("random_labels")
 if len(filename) == 0:
     filename.append("vanilla")
 filename = "_".join(filename)
