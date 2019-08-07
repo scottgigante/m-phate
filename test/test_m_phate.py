@@ -14,15 +14,15 @@ def test_m_phate(n_jobs):
         0, 1, (n_time_steps, n_points, n_dim)), axis=0)
 
     # embedding
-    m_phate_op = m_phate.M_PHATE(n_jobs=n_jobs)
+    m_phate_op = m_phate.M_PHATE(n_jobs=n_jobs, verbose=0)
     m_phate_data = m_phate_op.fit_transform(data)
 
     assert m_phate_data.shape[0] == n_points * n_time_steps
     assert m_phate_data.shape[1] == 2
-    
+
 @parameterized(
     [(2,), (3,)])
-def test_multislice_kernel(intraslice_knn)
+def test_multislice_kernel(intraslice_knn):
     # create fake data
     n_time_steps = 50
     n_points = 20
@@ -53,7 +53,8 @@ def test_multislice_kernel(intraslice_knn)
     assert nnz == kernel.nnz
     
     # check this passes through phate op
-    m_phate_op = m_phate.M_PHATE(intraslice_knn=intraslice_knn, decay=None)
+    m_phate_op = m_phate.M_PHATE(intraslice_knn=intraslice_knn,
+                                 decay=None, verbose=0)
     m_phate_data = m_phate_op.fit_transform(data)
     
     # threshold
@@ -62,3 +63,16 @@ def test_multislice_kernel(intraslice_knn)
     assert m_phate_data.shape[0] == n_points * n_time_steps
     assert m_phate_data.shape[1] == 2
     assert (m_phate_op.graph.kernel - kernel).nnz == 0
+
+
+def test_normalize():
+    # create fake data
+    n_time_steps = 50
+    n_points = 20
+    n_dim = 10
+    np.random.seed(42)
+    data = np.cumsum(np.random.normal(
+        0, 1, (n_time_steps, n_points, n_dim)), axis=0)
+    data_norm = m_phate.utils.normalize(data)
+    np.testing.assert_allclose(data_norm.mean(axis=2), 0, rtol=0, atol=1e-15)
+    np.testing.assert_allclose(data_norm.std(axis=2), 1, rtol=0, atol=1e-15)
