@@ -10,12 +10,13 @@ def test_m_phate(n_jobs):
     n_time_steps = 50
     n_points = 20
     n_dim = 10
+    n_pca = 5
     np.random.seed(42)
     data = np.cumsum(np.random.normal(
         0, 1, (n_time_steps, n_points, n_dim)), axis=0)
 
     # embedding
-    m_phate_op = m_phate.M_PHATE(n_jobs=n_jobs, verbose=0)
+    m_phate_op = m_phate.M_PHATE(n_jobs=n_jobs, verbose=0, n_pca=n_pca)
     m_phate_data = m_phate_op.fit_transform(data)
 
     assert m_phate_data.shape[0] == n_points * n_time_steps
@@ -42,14 +43,12 @@ def test_multislice_kernel(intraslice_knn):
     n_time_steps = 50
     n_points = 20
     n_dim = 10
-    n_pca = 5
     np.random.seed(42)
     data = np.cumsum(np.random.normal(
         0, 1, (n_time_steps, n_points, n_dim)), axis=0)
     kernel = m_phate.kernel.multislice_kernel(m_phate.utils.normalize(data), 
                                               intraslice_knn=intraslice_knn,
-                                              decay=None,
-                                              n_pca=n_pca)
+                                              decay=None)
 
     nnz = 0
     # intraslice kernel
@@ -71,7 +70,7 @@ def test_multislice_kernel(intraslice_knn):
 
     # check this passes through phate op
     m_phate_op = m_phate.M_PHATE(intraslice_knn=intraslice_knn,
-                                 decay=None, verbose=0, n_pca=n_pca)
+                                 decay=None, verbose=0)
     m_phate_data = m_phate_op.fit_transform(data)
 
     # threshold
