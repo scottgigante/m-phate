@@ -1,5 +1,12 @@
 # M-PHATE
 
+[![Latest PyPi version](https://img.shields.io/pypi/v/m-phate.svg)](https://pypi.org/project/m-phate/)
+[![Travis CI Build](https://api.travis-ci.com/scottgigante/m-phate.svg?branch=master)](https://travis-ci.com/scottgigante/m-phate)
+[![Coverage Status](https://coveralls.io/repos/github/scottgigante/m-phate/badge.svg?branch=master)](https://coveralls.io/github/scottgigante/m-phate?branch=master)
+[![arXiv Preprint](http://img.shields.io/badge/cs.LG-arXiv%3Axxxx.xxxx-B31B1B.svg)](https://arxiv.org/abs/xxxx.xxxx)
+[![Twitter](https://img.shields.io/twitter/follow/scottgigante.svg?style=social&label=Follow)](https://twitter.com/scottgigante)
+[![GitHub stars](https://img.shields.io/github/stars/scottgigante/M-PHATE.svg?style=social&label=Stars)](https://github.com/scottgigante/M-PHATE/)
+
 ![Demonstration M-PHATE plot](demonstration.png)
 
 Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visualization of time-evolving data. To learn more about M-PHATE, you can read our preprint on arXiv in which we apply it to the evolution of neural networks over the course of training. Above we show a demonstration of M-PHATE applied to a 3-layer MLP over 300 epochs of training, colored by epoch (left), hidden layer (center) and the digit label that most strongly activates each hidden unit (right).
@@ -167,10 +174,9 @@ mkdir train_data; cd train_data; python -i ../scripts/generalization_plot.py ${D
 * Notebook examples for:
   * Classification, pytorch
   * Autoencoder, pytorch
-* Parameter tuning discussion notebook
 * Submit to pypi
 * Build readthedocs page
-* shields.io badges
+* Update arXiv link
 
 ## Help
 
