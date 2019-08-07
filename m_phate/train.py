@@ -20,13 +20,15 @@ def build_config(limit_gpu_fraction=0.2, limit_cpu_fraction=10):
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
         config = tf.ConfigProto(device_count={'GPU': 0})
     if limit_cpu_fraction is not None:
-        if limit_cpu_fraction <= 0:
-            # -2 gives all CPUs except 2
-            cpu_count = min(
-                1, int(os.cpu_count() + limit_cpu_fraction))
+        if limit_cpu_fraction == 0:
+            cpu_count = 1
+        if limit_cpu_fraction < 0:
+            # -2 gives all CPUs except 1
+            cpu_count = max(
+                1, int(os.cpu_count() + limit_cpu_fraction + 1))
         elif limit_cpu_fraction < 1:
             # 0.5 gives 50% of available CPUs
-            cpu_count = min(
+            cpu_count = max(
                 1, int(os.cpu_count() * limit_cpu_fraction))
         else:
             # 2 gives 2 CPUs
@@ -51,8 +53,8 @@ class TraceHistory(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs):
         self.trace.append(
-            np.concatenate([data.T for data in self.trace_model.predict(
-                self.trace_data)]))
+            np.array([data.T for data in self.trace_model.predict(
+                self.trace_data)]).reshape(-1, self.trace_data.shape[0]))
         if self.save_weights:
             self.weights.append(self.trace_model.layers[1].get_weights()[0])
         return super().on_epoch_end(epoch, logs)
@@ -71,8 +73,8 @@ class BatchTraceHistory(keras.callbacks.Callback):
 
     def on_batch_end(self, epoch, logs):
         self.trace.append(
-            np.concatenate([data.T for data in self.trace_model.predict(
-                self.trace_data)]))
+            np.array([data.T for data in self.trace_model.predict(
+                self.trace_data)]).reshape(-1, self.trace_data.shape[0]))
         if self.save_weights:
             self.weights.append(self.trace_model.layers[1].get_weights()[0])
         return super().on_epoch_end(epoch, logs)

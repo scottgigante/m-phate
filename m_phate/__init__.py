@@ -1,4 +1,5 @@
-import m_phate.kernel
+from .version import __version__
+from .m_phate import M_PHATE
 
-from m_phate.m_phate import M_PHATE
+from . import kernel
 from . import utils
