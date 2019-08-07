@@ -280,11 +280,7 @@ class M_PHATE(phate.PHATE):
             del params['intraslice_knn']
 
         if 'n_svd' in params and params['n_svd'] != self.n_svd:
-            if self.n_svd is None or params['n_svd'] is None:
-                # need a different type of graph, reset entirely
-                self._reset_graph()
-            else:
-                self._set_graph_params(n_svd=params['n_svd'])
+            self._set_graph_params(n_svd=params['n_svd'])
             self.n_svd = params['n_svd']
             del params['n_svd']
 
