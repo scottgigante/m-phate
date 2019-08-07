@@ -36,6 +36,14 @@ The multislice kernel used in M-PHATE consists of building graphs over time slic
 
 ## Installation
 
+### Install from `pypi`
+
+```
+pip install --user m-phate
+```
+
+### Install from source
+
 ```
 pip install --user git+https://github.com/scottgigante/m-phate.git
 ```
@@ -176,7 +184,6 @@ mkdir train_data; cd train_data; python -i ../scripts/generalization_plot.py ${D
 * Notebook examples for:
   * Classification, pytorch
   * Autoencoder, pytorch
-* Submit to pypi
 * Build readthedocs page
 * Update arXiv link
 
