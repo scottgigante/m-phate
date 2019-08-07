@@ -131,7 +131,7 @@ For detailed examples, see our sample notebooks in `keras` and `tensorflow` in [
 
 ## Parameter tuning
 
-TODO.
+The key to tuning the parameters of M-PHATE is essentially balancing the tradeoff between interslice connectivity and intraslice connectivity. This is primarily achieved with `interslice_knn` and `intraslice_knn`. You can see an example of the effects of parameter tuning in [this notebook](https://nbviewer.jupyter.org/github/scottgigante/m-phate/blob/master/examples/parameter_tuning.ipynb).
 
 ## Figure reproduction
 
@@ -158,7 +158,7 @@ python scripts/task_switch_plot.py $DATA_DIR
 
 # generalization plot using training data
 ./scripts/generalization/generalization_train.sh ${DATA_DIR}/train_data --sample-train-data
-mkdir train_data; cd train_data; python ../scripts/generalization_plot.py ${DATA_DIR}/train_data; cd ..
+mkdir train_data; cd train_data; python -i ../scripts/generalization_plot.py ${DATA_DIR}/train_data; cd ..
 ```
 
 ## TODO
