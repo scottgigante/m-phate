@@ -9,6 +9,8 @@
   cache: 
     - pip
     - apt
+    - directories:
+          - $HOME/.keras/datasets
 
   install:
     - python setup.py install
