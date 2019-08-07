@@ -19,6 +19,7 @@ test_requires = [
     'coveralls',
     'keras>=2.2',
     'tensorflow>=1.13',
+    'parameterized',
 ]
 
 doc_requires = [
