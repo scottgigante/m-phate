@@ -3,8 +3,8 @@ import sys
 from setuptools import setup, find_packages
 
 install_requires = [
-    'numpy>=1.10.0',
-    'scipy>=0.18.0',
+    'numpy>=1.14.0,<1.17.0',
+    'scipy>=1.1.0',
     'scikit-learn>=0.19.1',
     'pandas>=0.19.0,<0.24',
     'joblib',
