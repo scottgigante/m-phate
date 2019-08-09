@@ -1,7 +1,20 @@
 import numpy as np
 import m_phate
 import graphtools
+import warnings
+from scipy import sparse
 from parameterized import parameterized
+
+def test_diagonalize_interslice_kernels():
+    n = 15
+    m = 8
+    kernels = [np.arange(n**2).reshape(n,n) + i*n**2 for i in range(m)]
+    
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=sparse.SparseEfficiencyWarning)
+        K = m_phate.kernel._diagonalize_interslice_kernels(kernels, method='csr')
+    D = m_phate.kernel._diagonalize_interslice_kernels(kernels, method='dia')
+    assert (D.tocsr() - K).nnz == 0
 
 @parameterized(
     [(1,), (-1,)])
