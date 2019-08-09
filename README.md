@@ -3,7 +3,7 @@
 [![Latest PyPi version](https://img.shields.io/pypi/v/m-phate.svg)](https://pypi.org/project/m-phate/)
 [![Travis CI Build](https://api.travis-ci.com/scottgigante/m-phate.svg?branch=master)](https://travis-ci.com/scottgigante/m-phate)
 [![Coverage Status](https://coveralls.io/repos/github/scottgigante/m-phate/badge.svg?branch=master)](https://coveralls.io/github/scottgigante/m-phate?branch=master)
-[![arXiv Preprint](http://img.shields.io/badge/cs.LG-arXiv%3Axxxx.xxxx-B31B1B.svg)](https://arxiv.org/abs/xxxx.xxxx)
+[![arXiv Preprint](http://img.shields.io/badge/cs.LG-arXiv%3A1908.02831-B31B1B.svg)](https://arxiv.org/abs/1908.02831)
 [![Twitter](https://img.shields.io/twitter/follow/scottgigante.svg?style=social&label=Follow)](https://twitter.com/scottgigante)
 [![GitHub stars](https://img.shields.io/github/stars/scottgigante/M-PHATE.svg?style=social&label=Stars)](https://github.com/scottgigante/M-PHATE/)
 
@@ -26,9 +26,11 @@ Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visua
 
 ## How it works
 
-Multislice PHATE (M-PHATE) combines a novel multislice kernel construction with the [PHATE visualization](https://github.com/KrishnaswamyLab/PHATE). Our kernel captures the dynamics of an evolving graph structure, that when when visualized, gives unique intuition about the evolution of a system; in our preprint on arXiv, we show this applied to a neural network over the course of training and re-training. We compare M-PHATE to other dimensionality reduction techniques, showing that the combined construction of the multislice kernel and the use of PHATE provide significant improvements to visualization. In two vignettes, we demonstrate the use M-PHATE on established training tasks and learning methods in continual learning, and in regularization techniques commonly used to improve generalization performance.
+Multislice PHATE (M-PHATE) combines a novel multislice kernel construction with the [PHATE visualization](https://github.com/KrishnaswamyLab/PHATE). Our kernel captures the dynamics of an evolving graph structure, that when when visualized, gives unique intuition about the evolution of a system; in our preprint, we show this applied to a neural network over the course of training and re-training. We compare M-PHATE to other dimensionality reduction techniques, showing that the combined construction of the multislice kernel and the use of PHATE provide significant improvements to visualization. In two vignettes, we demonstrate the use M-PHATE on established training tasks and learning methods in continual learning, and in regularization techniques commonly used to improve generalization performance.
 
 The multislice kernel used in M-PHATE consists of building graphs over time slices of data (e.g. epochs in neural network training) and then connecting these slices by connecting each point to itself over time, weighted by its similarity. The result is a highly sparse, structured kernel which provides insight into the evolving structure of the data.
+
+For more details, check out our [preprint on arXiv](https://arxiv.org/abs/1908.02831).
 
 ![Example of multislice graph](multislice_graph.png)
 
