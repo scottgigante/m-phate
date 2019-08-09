@@ -18,6 +18,7 @@ Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visua
 * [Usage](#Usage)
   * [Basic Usage Example](#Basic-usage-example)
   * [Network Training](#Network-training)
+  * [Example Notebooks](#Examples-notebooks)
 * [Parameter Tuning](#Parameter-tuning)
 * [Figure Reproduction](#Figure-reproduction)
 * [Help](#Help)
@@ -138,6 +139,8 @@ m_phate_data = m_phate_op.fit_transform(trace_data)
 scprep.plot.scatter2d(m_phate_data, c=epoch, ticks=False,
                       label_prefix="M-PHATE")
 ```
+
+### Example notebooks
 
 For detailed examples, see our sample notebooks in `keras` and `tensorflow` in [`examples`](https://github.com/scottgigante/m-phate/tree/master/examples):
 
