@@ -46,8 +46,7 @@ def _diagonalize_interslice_kernels(interslice_kernels, method='dia'):
             K = graphtools.utils.set_submatrix(
                 K, np.arange(n) * m + vertex, np.arange(n) * m + vertex, A)
         # set main diagonal to 0
-        K = graphtools.utils.set_diagonal(
-                K, 0)
+        K = graphtools.utils.set_diagonal(K, 0)
     return K
         
 
