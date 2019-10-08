@@ -26,6 +26,31 @@ def distance_to_kernel(D, bandwidth):
     return A
 
 
+def _diagonalize_interslice_kernels(interslice_kernels, method='dia'):
+    n = interslice_kernels[0].shape[0]
+    m = len(interslice_kernels)
+    if method == 'dia':
+        diags = np.zeros((2*n-1, n*m))
+        for vertex, A in enumerate(interslice_kernels):
+            diags[(np.tile(np.arange(n, 2*n), n) - np.repeat(np.arange(1, n+1), n), 
+                   np.tile(np.arange(0, n*m, m), n) + vertex)] = A.flatten()
+        offsets = np.arange(-n*m + m, n*m, m)
+        # set main diagonal to 0
+        diags[offsets == 0] = 0
+        K = sparse.dia_matrix((diags, offsets), shape=(n*m, n*m))
+    else:
+        assert method == 'csr'
+        # this is inefficient
+        K = sparse.csr_matrix((n*m, n*m))
+        for vertex, A in enumerate(interslice_kernels):
+            K = graphtools.utils.set_submatrix(
+                K, np.arange(n) * m + vertex, np.arange(n) * m + vertex, A)
+        # set main diagonal to 0
+        K = graphtools.utils.set_diagonal(K, 0)
+    return K
+        
+
+
 def _multislice_kernel(data,
                        intraslice_knn=2,
                        interslice_knn=25,
@@ -56,15 +81,12 @@ def _multislice_kernel(data,
     bandwidths = p(knn_fn(D, interslice_knn)
                    for D in interslice_dist)
     bandwidth = np.mean(bandwidths)
-    interslice_kernel = p(kernel_dist_fn(
+    interslice_kernels = p(kernel_dist_fn(
         D, bandwidth)
         for D in interslice_dist)
 
-    # Add interslice links
-    for vertex, A in enumerate(interslice_kernel):
-        # plug into K
-        K = graphtools.utils.set_submatrix(
-            K, np.arange(n) * m + vertex, np.arange(n) * m + vertex, A)
+    K = K.tocsr() + _diagonalize_interslice_kernels(interslice_kernels).tocsr()
+        
     return K
 
 
