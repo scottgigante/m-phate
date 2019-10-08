@@ -18,7 +18,7 @@ test_requires = [
     'coverage',
     'coveralls',
     'keras>=2.2',
-    'tensorflow>=1.13',
+    'tensorflow>=1.13,<2.0',
     'parameterized',
 ]
 

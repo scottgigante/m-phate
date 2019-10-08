@@ -4,7 +4,7 @@ scikit-learn>=1.19.1
 matplotlib>=3.0
 pandas>=0.25
 keras>=2.2
-tensorflow>=1.13
+tensorflow>=1.13,<2.0
 scprep>=1.0
 joblib
 phate>=0.4.3
