@@ -6,9 +6,9 @@ install_requires = [
     'numpy>=1.14.0',
     'scipy>=1.1.0',
     'scikit-learn>=0.19.1',
-    'pandas>=0.19.0,<0.24',
+    'pandas>=0.25',
     'joblib',
-    'scprep>=0.12.2',
+    'scprep>=1.0',
     'phate>=0.4.3',
     'graphtools>=1.1'
 ]
