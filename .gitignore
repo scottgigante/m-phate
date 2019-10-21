@@ -7,6 +7,7 @@ data
 .coverage
 .ipynb_checkpoints
 doc/source/examples/*.ipynb
+.eggs
 
 #syncthing
 .syncthing.*
