@@ -55,10 +55,12 @@ def rehearsal_generator(X, Y, X_rehearsal, Y_rehearsal, batch_size):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('scheme', choices=['task', 'domain', 'class'], type=str)
+parser.add_argument('--dataset', choices=['mnist', 'cifar'], default='mnist', type=str)
 parser.add_argument('--optimizer', '-o', choices=['adam', 'adagrad'], type=str)
 parser.add_argument('--rehearsal', '-r', type=int, default=0)
 parser.add_argument('--batch-size', '-b', type=int, default=128)
 parser.add_argument('--save-dir', '-S', type=str, default="./data")
+parser.add_argument('--sample-train-data', '-t', action='store_true', default=False)
 
 args = parser.parse_args()
 
@@ -78,18 +80,31 @@ if args.optimizer == 'adagrad':
 else:
     optimizer = keras.optimizers.Adam(lr=1e-5)
 
+if args.dataset == 'mnist':
+    x_train, x_test, y_train, y_test = m_phate.data.load_mnist()
+elif args.dataset == 'cifar':
+    x_train, x_test, y_train, y_test = m_phate.data.load_cifar()
+else:
+    raise ValueError
 
-x_train, x_test, y_train, y_test = m_phate.data.load_mnist()
+
+# select data for epoch sampling
+if args.sample_train_data:
+    x_sample, y_sample = x_train, y_train
+else:
+    x_sample, y_sample = x_test, y_test
 
 
+# reseed RNG to get the same selection each time
 np.random.seed(42)
+tf.set_random_seed(42)
 trace_idx = []
 for i in range(10):
     trace_idx.append(np.random.choice(np.argwhere(
-        y_test[:, i] == 1).flatten(), 10, replace=False))
+        y_sample[:, i] == 1).flatten(), 10, replace=False))
 
 trace_idx = np.concatenate(trace_idx)
-trace_data = x_test[trace_idx]
+trace_data = x_sample[trace_idx]
 
 
 inputs = keras.layers.Input(
@@ -165,8 +180,8 @@ if rehearsal:
 filename = "_".join(filename)
 
 savemat(
-    os.path.join(args.save_dir, "task_switch/mnist_classifier_incremental_{}.mat".format(filename)), {
-        'trace': trace.trace, 'digit': y_test.argmax(1)[trace_idx],
+    os.path.join(args.save_dir, "task_switch/{}_classifier_incremental_{}.mat".format(args.dataset, filename)), {
+        'trace': trace.trace, 'digit': y_sample.argmax(1)[trace_idx],
         'layer': np.concatenate([np.repeat(i, int(layer.shape[1]))
                                  for i, layer in enumerate(model_trace.outputs)]),
         'loss': np.concatenate(loss),

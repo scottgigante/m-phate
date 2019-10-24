@@ -22,8 +22,13 @@ try:
 except IndexError:
     data_dir = "./data"
 
+try:
+    dataset = sys.argv[2]
+except IndexError:
+    dataset = "mnist"
+
 data = loadmat(os.path.join(
-    data_dir, "generalization/mnist_classifier_vanilla.mat"))
+    data_dir, "generalization/{}_classifier_vanilla.mat".format(dataset)))
 
 trace = data['trace']
 loss = data['val_loss']
@@ -68,7 +73,7 @@ dm_ms = m_phate.kernel.DM(m_phate_op.graph)
 tasklogger.log_complete("DM")
 
 geodesic_file = os.path.expanduser(
-    "data/classifier_mnist_geodesic.npy")
+    "data/classifier_{}_geodesic.npy".format(dataset))
 if False:
     tasklogger.log_start("geodesic distances")
     tasklogger.log_warning(
@@ -101,7 +106,7 @@ scprep.plot.scatter2d(isomap_naive, label_prefix="Isomap", ticks=False,
 scprep.plot.scatter2d(tsne_naive, label_prefix="t-SNE", ticks=False,
                       c=epoch, ax=ax4, legend=False)
 plt.tight_layout()
-plt.savefig("comparison_naive.png")
+plt.savefig("{}_comparison_naive.png".format(dataset))
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(16, 4))
 scprep.plot.scatter2d(m_phate_data, label_prefix="PHATE", ticks=False,
@@ -113,7 +118,7 @@ scprep.plot.scatter2d(isomap_ms, label_prefix="Isomap", ticks=False,
 scprep.plot.scatter2d(tsne_ms, label_prefix="t-SNE", ticks=False,
                       c=epoch, ax=ax4, legend=False)
 plt.tight_layout()
-plt.savefig("comparison_multiscale.png")
+plt.savefig("{}_comparison_multiscale.png".format(dataset))
 
 
 def evaluate_loss(Y):

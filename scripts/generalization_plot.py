@@ -88,7 +88,7 @@ for i, ax, filename in zip(np.arange(len(filenames)), axes.flatten(), filenames)
 
 scprep.plot.tools.generate_legend(
     cmap={i: plt.cm.tab10.colors[i] for i in range(10)},
-    ax=axes[0, -1], title='Most active digit',
+    ax=axes[0, -1], title='Most active class',
     bbox_to_anchor=(1,1.03), fontsize=12)
 plt.tight_layout()
 plt.savefig("{}_generalization.png".format(dataset))
@@ -112,6 +112,7 @@ for filename in filenames:
 performance_df = pd.DataFrame(columns=performance.keys())
 performance_df.loc['Memorization error'] = performance
 performance_df.loc['Visualization variance'] = variance
+performance_df.to_csv("generalization_performance.csv")
 print(performance_df)
 
 

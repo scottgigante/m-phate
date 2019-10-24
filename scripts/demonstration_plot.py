@@ -18,8 +18,13 @@ try:
 except IndexError:
     data_dir = "./data"
 
+try:
+    dataset = sys.argv[2]
+except IndexError:
+    dataset = "mnist"
+
 data = loadmat(os.path.join(
-    data_dir, "generalization/mnist_classifier_vanilla.mat"))
+    data_dir, "generalization/{}_classifier_vanilla.mat".format(dataset)))
 trace = data['trace']
 
 ###############
@@ -57,7 +62,7 @@ scprep.plot.scatter2d(m_phate_data, c=most_active_digit, ax=ax3,
                       title='Most active digit',
                       ticks=False, label_prefix="M-PHATE")
 plt.tight_layout()
-plt.savefig("demonstration.png")
+plt.savefig("{}_demonstration.png".format(dataset))
 
 ###############
 # 3D plot
@@ -68,4 +73,4 @@ m_phate_data = m_phate_op.transform()
 scprep.plot.rotate_scatter3d(m_phate_data, c=most_active_digit,
                              title='Most active digit',
                              ticks=False, label_prefix="M-PHATE",
-                             filename="demonstration.gif")
+                             filename="{}_demonstration.gif".format(dataset))

@@ -165,22 +165,27 @@ To run them:
 git clone https://github.com/scottgigante/m-phate
 cd m-phate
 pip install --user .
-DATA_DIR=~/data/checkpoints/m_phate # change this if you want to store the data elsewhere
+
+# change this if you want to store the data elsewhere
+DATA_DIR=~/data/checkpoints/m_phate
+
+# choose between cifar and mnist
+DATASET="mnist"
+EXTRA_ARGS="--dataset ${DATASET}"
+
+# remove to use validation data
+EXTRA_ARGS="${EXTRA_ARGS} --sample-train-data"
 
 chmod +x scripts/generalization/generalization_train.sh
 chmod +x scripts/task_switching/classifier_mnist_task_switch_train.sh
 
-./scripts/generalization/generalization_train.sh $DATA_DIR
-./scripts/task_switching/classifier_mnist_task_switch_train.sh $DATA_DIR
+./scripts/generalization/generalization_train.sh "${DATA_DIR}" "${EXTRA_ARGS}"
+./scripts/task_switching/classifier_mnist_task_switch_train.sh "${DATA_DIR}" "${EXTRA_ARGS}"
 
-python scripts/demonstration_plot.py $DATA_DIR
-python scripts/comparison_plot.py $DATA_DIR
-python scripts/generalization_plot.py $DATA_DIR
-python scripts/task_switch_plot.py $DATA_DIR
-
-# generalization plot using training data
-./scripts/generalization/generalization_train.sh ${DATA_DIR}/train_data --sample-train-data
-mkdir train_data; cd train_data; python -i ../scripts/generalization_plot.py ${DATA_DIR}/train_data; cd ..
+python scripts/demonstration_plot.py "${DATA_DIR}" "${DATASET}"
+python scripts/comparison_plot.py "${DATA_DIR}" "${DATASET}"
+python scripts/generalization_plot.py "${DATA_DIR}" "${DATASET}"
+python scripts/task_switch_plot.py "${DATA_DIR}" "${DATASET}"
 ```
 
 ## TODO

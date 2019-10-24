@@ -13,6 +13,8 @@ from scipy.io import loadmat
 import scipy.stats
 from sklearn import cluster, metrics
 
+from joblib import Parallel, delayed
+
 
 try:
     data_dir = os.path.expanduser(sys.argv[1])
@@ -234,4 +236,5 @@ for colname in colnames:
                             ari_score(data)]
 
 print(df.round(3))
+df.to_csv("task_switch_performance.csv")
 print("rho = {}".format(scipy.stats.pearsonr(df['loss'], df['ari'])[0]))
