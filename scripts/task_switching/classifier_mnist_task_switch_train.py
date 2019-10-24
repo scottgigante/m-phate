@@ -82,8 +82,10 @@ else:
 
 if args.dataset == 'mnist':
     x_train, x_test, y_train, y_test = m_phate.data.load_mnist()
+    epochs_per_task = 4
 elif args.dataset == 'cifar':
     x_train, x_test, y_train, y_test = m_phate.data.load_cifar()
+    epochs_per_task = 8
 else:
     raise ValueError
 
@@ -163,7 +165,7 @@ for i, (train_idx, cols) in enumerate(zip(task_idxs, col_idxs)):
         task_gen,
         steps_per_epoch=(np.sum(train_idx) // batch_size *
                          (1 if i == 0 and rehearsal else 2)),
-        epochs=4,
+        epochs=epochs_per_task,
         verbose=0, callbacks=[trace, history],
         validation_data=(x_test,
                          y_test))

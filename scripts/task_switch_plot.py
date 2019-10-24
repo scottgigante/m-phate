@@ -122,7 +122,7 @@ for rowname, ax in zip(rownames, axes):
         ax.plot(data['loss'].flatten(), color=c_train,
                 linestyle='-.', label=label + ' train')
     ax.set_title('Incremental ' + rowname)
-    ax.set_xticks([0, 4, 8, 12, 16])
+    ax.set_xticks(np.linspace(0, data['val_loss'].shape[1], 6))
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Categorical cross entropy")
 
