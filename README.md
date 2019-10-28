@@ -7,7 +7,7 @@
 [![Twitter](https://img.shields.io/twitter/follow/scottgigante.svg?style=social&label=Follow)](https://twitter.com/scottgigante)
 [![GitHub stars](https://img.shields.io/github/stars/scottgigante/M-PHATE.svg?style=social&label=Stars)](https://github.com/scottgigante/M-PHATE/)
 
-![Demonstration M-PHATE plot](demonstration.png)
+![Demonstration M-PHATE plot](https://github.com/scottgigante/m-phate/raw/master/img/demonstration.png)
 
 Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visualization of time-evolving data. To learn more about M-PHATE, you can read our preprint on arXiv in which we apply it to the evolution of neural networks over the course of training. Above we show a demonstration of M-PHATE applied to a 3-layer MLP over 300 epochs of training, colored by epoch (left), hidden layer (center) and the digit label that most strongly activates each hidden unit (right). Below, you see the same network with dropout applied in training embedded in 3D, also colored by most active unit.
 
@@ -23,7 +23,7 @@ Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visua
 * [Figure Reproduction](#Figure-reproduction)
 * [Help](#Help)
 
-![3D rotating gif](dropout3d.gif)
+![3D rotating gif](https://github.com/scottgigante/m-phate/blob/master/img/dropout3d.gif)
 
 ## How it works
 
@@ -33,9 +33,9 @@ The multislice kernel used in M-PHATE consists of building graphs over time slic
 
 For more details, check out our [preprint on arXiv](https://arxiv.org/abs/1908.02831).
 
-![Example of multislice graph](multislice_graph.png)
+![Example of multislice graph](https://github.com/scottgigante/m-phate/blob/master/img/multislice_graph.png)
 
-![Example of multislice kernel](multislice_kernel.png)
+![Example of multislice kernel](https://github.com/scottgigante/m-phate/blob/master/img/multislice_kernel.png)
 
 ## Installation
 
@@ -78,7 +78,7 @@ time = np.repeat(np.arange(n_time_steps), n_points)
 scprep.plot.scatter2d(m_phate_data, c=time, ticks=False, label_prefix="M-PHATE")
 ```
 
-![Example embedding](example.png)
+![Example embedding](https://github.com/scottgigante/m-phate/blob/master/img/example.png)
 
 ### Network training
 
@@ -195,7 +195,6 @@ python scripts/task_switch_plot.py "${DATA_DIR}" "${DATASET}"
   * Classification, pytorch
   * Autoencoder, pytorch
 * Build readthedocs page
-* Update arXiv link
 
 ## Help
 
