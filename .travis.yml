@@ -16,6 +16,7 @@
     - pip install -U .
 
   script:
+    - python -c "import m_phate"
     - pip install -U .[test]
     - python setup.py test
     - pip install -U .[doc]
