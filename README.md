@@ -31,7 +31,7 @@ Multislice PHATE (M-PHATE) combines a novel multislice kernel construction with 
 
 The multislice kernel used in M-PHATE consists of building graphs over time slices of data (e.g. epochs in neural network training) and then connecting these slices by connecting each point to itself over time, weighted by its similarity. The result is a highly sparse, structured kernel which provides insight into the evolving structure of the data.
 
-For more details, check out our [preprint on arXiv](https://arxiv.org/abs/1908.02831).
+For more details, check out our [NeurIPS publication](https://arxiv.org/abs/1908.02831), read the [tweetorial](https://twitter.com/scottgigante/status/1159831780926427136) or have a look at our [poster](https://github.com/scottgigante/m-phate/blob/master/img/poster.pdf).
 
 ![Example of multislice graph](https://github.com/scottgigante/m-phate/blob/master/img/multislice_graph.png)
 
