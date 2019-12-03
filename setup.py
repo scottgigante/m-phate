@@ -3,14 +3,15 @@ import sys
 from setuptools import setup, find_packages
 
 install_requires = [
-    'numpy>=1.14.0',
+    'numpy>=1.16.0',
     'scipy>=1.1.0',
     'scikit-learn>=0.19.1',
     'pandas>=0.25',
     'joblib',
     'scprep>=1.0',
     'phate>=0.4.3',
-    'graphtools>=1.1'
+    'graphtools>=1.1',
+    "tasklogger>=1.0",
 ]
 
 test_requires = [
