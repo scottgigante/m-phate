@@ -5,6 +5,8 @@ import numpy as np
 
 from . import kernel, utils
 
+_logger = tasklogger.get_tasklogger("graphtools")
+
 
 class M_PHATE(phate.PHATE):
     """Multislice PHATE operator which performs dimensionality reduction.
@@ -140,28 +142,26 @@ class M_PHATE(phate.PHATE):
         if self.normalize:
             X = utils.normalize(X)
 
-        tasklogger.log_start("multislice kernel")
-        K = kernel.multislice_kernel(X,
-                                     intraslice_knn=self.intraslice_knn,
-                                     interslice_knn=self.interslice_knn,
-                                     decay=self.decay,
-                                     n_pca=self.n_pca,
-                                     distance=self.knn_dist,
-                                     n_jobs=self.n_jobs)
-        tasklogger.log_complete("multislice kernel")
-        tasklogger.log_start("graph and diffusion operator")
-        n_landmark = self.n_landmark if self.n_landmark < K.shape[0] else None
-        self.graph = graphtools.Graph(
-            K,
-            precomputed="affinity",
-            n_landmark=n_landmark,
-            n_svd=self.n_svd,
-            n_jobs=self.n_jobs,
-            verbose=self.verbose,
-            random_state=self.random_state,
-            **(self.kwargs))
-        self.diff_op
-        tasklogger.log_complete("graph and diffusion operator")
+        with _logger.task("multislice kernel"):
+            K = kernel.multislice_kernel(X,
+                                         intraslice_knn=self.intraslice_knn,
+                                         interslice_knn=self.interslice_knn,
+                                         decay=self.decay,
+                                         n_pca=self.n_pca,
+                                         distance=self.knn_dist,
+                                         n_jobs=self.n_jobs)
+        with _logger.task("graph and diffusion operator"):
+            n_landmark = self.n_landmark if self.n_landmark < K.shape[0] else None
+            self.graph = graphtools.Graph(
+                K,
+                precomputed="affinity",
+                n_landmark=n_landmark,
+                n_svd=self.n_svd,
+                n_jobs=self.n_jobs,
+                verbose=self.verbose,
+                random_state=self.random_state,
+                **(self.kwargs))
+            self.diff_op
         result = super().fit(self.graph)
         return result
 
@@ -184,10 +184,9 @@ class M_PHATE(phate.PHATE):
         embedding : array, shape=[n_samples, n_dimensions]
             The cells embedded in a lower dimensional space using PHATE
         """
-        tasklogger.log_start('M-PHATE')
-        self.fit(X)
-        embedding = self.transform(**kwargs)
-        tasklogger.log_complete('M-PHATE')
+        with _logger.task('M-PHATE'):
+            self.fit(X)
+            embedding = self.transform(**kwargs)
         return embedding
 
     def _check_params(self):
