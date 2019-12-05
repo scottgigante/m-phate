@@ -53,8 +53,8 @@ class TraceHistory(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs):
         self.trace.append(
-            np.array([data.T for data in self.trace_model.predict(
-                self.trace_data)]).reshape(-1, self.trace_data.shape[0]))
+            np.vstack([data.T for data in self.trace_model.predict(
+                self.trace_data)]))
         if self.save_weights:
             self.weights.append(self.trace_model.layers[1].get_weights()[0])
         return super().on_epoch_end(epoch, logs)

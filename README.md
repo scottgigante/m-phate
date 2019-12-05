@@ -108,7 +108,7 @@ lrelu = keras.layers.LeakyReLU(alpha=0.1)
 inputs = keras.layers.Input(
     shape=(x_train.shape[1],), dtype='float32', name='inputs')
 h1 = keras.layers.Dense(128, activation=lrelu, name='h1')(inputs)
-h2 = keras.layers.Dense(128, activation=lrelu, name='h2')(h1)
+h2 = keras.layers.Dense(64, activation=lrelu, name='h2')(h1)
 h3 = keras.layers.Dense(128, activation=lrelu, name='h3')(h2)
 outputs = keras.layers.Dense(10, activation='softmax', name='output_all')(h3)
 
