@@ -9,7 +9,7 @@ install_requires = [
     'pandas>=0.25',
     'joblib',
     'scprep>=1.0',
-    'phate>=0.4.3',
+    'phate>=1.0.0',
     'graphtools>=1.1',
     "tasklogger>=1.0",
 ]

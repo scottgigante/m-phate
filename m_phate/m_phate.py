@@ -110,7 +110,7 @@ class M_PHATE(phate.PHATE):
     def __init__(self, n_components=2,
                  intraslice_knn=2, interslice_knn=25,
                  decay=5, t='auto', gamma=0, n_landmark=4000,
-                 normalize=True, n_pca=100, n_svd=100,
+                 normalize=True, optimizer='smacof', n_pca=100, n_svd=100,
                  n_jobs=-2, random_state=None, verbose=1,
                  knn=None,
                  **phate_kwargs):
@@ -124,6 +124,7 @@ class M_PHATE(phate.PHATE):
         return super().__init__(
             n_components=n_components,
             knn=intraslice_knn,
+            optimizer=optimizer,
             decay=decay, t=t,
             n_pca=n_pca, gamma=gamma,
             n_landmark=n_landmark,
