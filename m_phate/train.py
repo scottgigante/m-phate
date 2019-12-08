@@ -40,7 +40,7 @@ def build_config(limit_gpu_fraction=0.2, limit_cpu_fraction=10):
     return config
 
 
-class TraceHistory(keras.callbacks.Callback):
+class _History(keras.callbacks.Callback):
 
     def __init__(self, data, model, save_weights=False, *args, **kwargs):
         self.trace_data = data
@@ -50,31 +50,28 @@ class TraceHistory(keras.callbacks.Callback):
             self.weights = []
         self.trace = []
         super().__init__(*args, **kwargs)
+
+    def _record_trace(self):
+        if len(self.trace_model.outputs) > 1:
+            self.trace.append(
+                np.vstack([data.T for data in self.trace_model.predict(
+                    self.trace_data)]))
+        else:
+            self.trace.append(self.trace_model.predict(
+                    self.trace_data).T)
+        if self.save_weights:
+            self.weights.append(self.trace_model.layers[1].get_weights()[0])
+
+
+class TraceHistory(_History):
 
     def on_epoch_end(self, epoch, logs):
-        self.trace.append(
-            np.vstack([data.T for data in self.trace_model.predict(
-                self.trace_data)]))
-        if self.save_weights:
-            self.weights.append(self.trace_model.layers[1].get_weights()[0])
+        self._record_trace()
         return super().on_epoch_end(epoch, logs)
 
 
-class BatchTraceHistory(keras.callbacks.Callback):
-
-    def __init__(self, data, model, save_weights=False, *args, **kwargs):
-        self.trace_data = data
-        self.trace_model = model
-        self.save_weights = save_weights
-        if save_weights:
-            self.weights = []
-        self.trace = []
-        super().__init__(*args, **kwargs)
+class BatchTraceHistory(_History):
 
     def on_batch_end(self, epoch, logs):
-        self.trace.append(
-            np.array([data.T for data in self.trace_model.predict(
-                self.trace_data)]).reshape(-1, self.trace_data.shape[0]))
-        if self.save_weights:
-            self.weights.append(self.trace_model.layers[1].get_weights()[0])
-        return super().on_epoch_end(epoch, logs)
+        self._record_trace()
+        return super().on_batch_end(epoch, logs)

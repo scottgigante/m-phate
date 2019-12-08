@@ -56,8 +56,8 @@ def test_trace_1_layer():
               verbose=0, callbacks=[trace, batch_trace])
 
     assert len(trace.trace) == 1
-    assert trace.trace[0].shape == (n_hidden, n_trace)
-    assert len(batch_trace.trace) == n_batch
+    assert trace.trace[0].shape == (n_hidden, n_trace), trace.trace[0].shape
+    assert len(batch_trace.trace) == n_batch, len(batch_trace.trace)
     assert np.all([t.shape == (n_hidden, n_trace) for t in batch_trace.trace])
 
 def test_trace_2_layer():
@@ -77,7 +77,7 @@ def test_trace_2_layer():
     inputs = keras.layers.Input(
         shape=(n_dim,), dtype='float32', name='inputs')
     h1 = keras.layers.Dense(n_hidden, name='h1')(inputs)
-    h2 = keras.layers.Dense(n_hidden, name='h2')(h1)
+    h2 = keras.layers.Dense(n_hidden * 2, name='h2')(h1)
     outputs = keras.layers.Dense(n_dim, name='output_all')(h2)
 
     # build trace model helper
@@ -93,7 +93,7 @@ def test_trace_2_layer():
     model.fit(x, x, batch_size=n_points // n_batch, epochs=1,
               verbose=0, callbacks=[trace, batch_trace])
 
-    assert len(trace.trace) == 1
-    assert trace.trace[0].shape == (2*n_hidden, n_trace)
-    assert len(batch_trace.trace) == n_batch
-    assert np.all([t.shape == (2*n_hidden, n_trace) for t in batch_trace.trace])
+    assert len(trace.trace) == 1, len(trace.trace)
+    assert trace.trace[0].shape == (3*n_hidden, n_trace), trace.trace[0].shape
+    assert len(batch_trace.trace) == n_batch, len(batch_trace.trace)
+    assert np.all([t.shape == (3*n_hidden, n_trace) for t in batch_trace.trace])
