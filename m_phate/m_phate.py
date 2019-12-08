@@ -49,6 +49,10 @@ class M_PHATE(phate.PHATE):
     normalize : bool, optional, default: True
         If True, z-score the data
 
+    mds_solver : {'smacof', 'sgd'}, optional (default: 'smacof')
+        which solver to use for metric MDS. SGD is substantially faster,
+        but produces slightly less optimal results.
+
     n_pca : int, optional, default: 100
         Number of principal components to use for calculating
         neighborhoods. For extremely large datasets, using
@@ -110,7 +114,7 @@ class M_PHATE(phate.PHATE):
     def __init__(self, n_components=2,
                  intraslice_knn=2, interslice_knn=25,
                  decay=5, t='auto', gamma=0, n_landmark=4000,
-                 normalize=True, optimizer='smacof', n_pca=100, n_svd=100,
+                 normalize=True, mds_solver='smacof', n_pca=100, n_svd=100,
                  n_jobs=-2, random_state=None, verbose=1,
                  knn=None,
                  **phate_kwargs):
@@ -124,7 +128,7 @@ class M_PHATE(phate.PHATE):
         return super().__init__(
             n_components=n_components,
             knn=intraslice_knn,
-            optimizer=optimizer,
+            mds_solver=mds_solver,
             decay=decay, t=t,
             n_pca=n_pca, gamma=gamma,
             n_landmark=n_landmark,
