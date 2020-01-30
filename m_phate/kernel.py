@@ -15,8 +15,8 @@ def square_pdist(X):
 
 
 def knn_dist(D, interslice_knn, fun=np.median):
-    return np.median(np.partition(
-        D, interslice_knn, axis=1)[:, interslice_knn])
+    return np.maximum(np.median(np.partition(
+        D, interslice_knn, axis=1)[:, interslice_knn]), np.finfo('float').eps)
 
 
 def distance_to_kernel(D, bandwidth):
