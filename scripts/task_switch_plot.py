@@ -23,11 +23,18 @@ except IndexError:
 
 data_dir = os.path.join(data_dir, "task_switch")
 
+try:
+    dataset = sys.argv[2]
+except IndexError:
+    dataset = "mnist"
+
 n_skip = 50
 n_step = 50
 
 out = {}
 for filename in os.listdir(data_dir):
+    if dataset not in filename:
+        continue
     try:
         data = loadmat(os.path.join(data_dir, filename))
         filename = ".".join(filename.split('.')[:-1]).split('_')
@@ -51,7 +58,7 @@ for filename in os.listdir(data_dir):
         if filename in out:
             m_phate_data = out[filename]['phate']
         else:
-            m_phate_op = m_phate.M_PHATE(interslice_knn=12)
+            m_phate_op = m_phate.M_PHATE(interslice_knn=12, n_jobs=20)
             m_phate_data = m_phate_op.fit_transform(trace)
 
         out[filename] = {'phate': m_phate_data, 'epoch': epoch,
