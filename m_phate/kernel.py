@@ -144,6 +144,8 @@ def DM(G, t=1, n_components=2):
         float).eps).reshape(-1)
     # normalize by first eigenvector
     U = U / u1
+    # renormalize to length 1
+    U = U / np.linalg.norm(U, axis=0)
     # drop first eigenvector
     U, S = U[:, 1:], S[1:]
     # power eigenvalues
