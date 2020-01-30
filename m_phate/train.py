@@ -5,20 +5,23 @@ import scprep
 scprep.utils.check_version("keras", "2.2")  # noqa
 scprep.utils.check_version("tensorflow", "1.13")  # noqa
 
-import tensorflow as tf
 import keras
 
+try:
+    from tensorflow import GPUOptions, ConfigProto
+except ImportError:
+    from tensorflow.compat.v1 import GPUOptions, ConfigProto
 
 def build_config(limit_gpu_fraction=0.2, limit_cpu_fraction=10):
     if limit_gpu_fraction > 0:
         os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-        gpu_options = tf.GPUOptions(
+        gpu_options = GPUOptions(
             allow_growth=True,
             per_process_gpu_memory_fraction=limit_gpu_fraction)
-        config = tf.ConfigProto(gpu_options=gpu_options)
+        config = ConfigProto(gpu_options=gpu_options)
     else:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
-        config = tf.ConfigProto(device_count={'GPU': 0})
+        config = ConfigProto(device_count={'GPU': 0})
     if limit_cpu_fraction is not None:
         if limit_cpu_fraction == 0:
             cpu_count = 1
