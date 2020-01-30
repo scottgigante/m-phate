@@ -50,7 +50,7 @@ for filename in os.listdir(data_dir):
     if filename in out:
         m_phate_data = out[filename]['phate']
     else:
-        m_phate_op = m_phate.M_PHATE()
+        m_phate_op = m_phate.M_PHATE(n_jobs=20)
         m_phate_data = m_phate_op.fit_transform(trace)
 
     out[filename] = {'phate': m_phate_data, 'epoch': epoch,
