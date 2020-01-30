@@ -156,7 +156,7 @@ class M_PHATE(phate.PHATE):
                                          distance=self.knn_dist,
                                          n_jobs=self.n_jobs)
         with _logger.task("graph and diffusion operator"):
-            n_landmark = self.n_landmark if self.n_landmark < K.shape[0] else None
+            n_landmark = self.n_landmark if self.n_landmark is not None and self.n_landmark < K.shape[0] else None
             self.graph = graphtools.Graph(
                 K,
                 precomputed="affinity",
