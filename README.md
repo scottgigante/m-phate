@@ -18,7 +18,7 @@ Multislice PHATE (M-PHATE) is a dimensionality reduction algorithm for the visua
 * [Usage](#Usage)
   * [Basic Usage Example](#Basic-usage-example)
   * [Network Training](#Network-training)
-  * [Example Notebooks](#Examples-notebooks)
+  * [Example Notebooks](#Example-notebooks)
 * [Parameter Tuning](#Parameter-tuning)
 * [Figure Reproduction](#Figure-reproduction)
 * [Help](#Help)
