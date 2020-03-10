@@ -1,5 +1,5 @@
 import graphtools
-import graphtools.utils
+import graphtools.matrix
 from scipy.spatial import distance
 from scipy import sparse
 import numpy as np
@@ -43,10 +43,10 @@ def _diagonalize_interslice_kernels(interslice_kernels, method='dia'):
         # this is inefficient
         K = sparse.csr_matrix((n*m, n*m))
         for vertex, A in enumerate(interslice_kernels):
-            K = graphtools.utils.set_submatrix(
+            K = graphtools.matrix.set_submatrix(
                 K, np.arange(n) * m + vertex, np.arange(n) * m + vertex, A)
         # set main diagonal to 0
-        K = graphtools.utils.set_diagonal(K, 0)
+        K = graphtools.matrix.set_diagonal(K, 0)
     return K
         
 
@@ -72,7 +72,7 @@ def _multislice_kernel(data,
         for x in data)
     for i, G_K in enumerate(kernels):
         # plug into K
-        K = graphtools.utils.set_submatrix(K, np.arange(
+        K = graphtools.matrix.set_submatrix(K, np.arange(
             i * m, (i + 1) * m), np.arange(i * m, (i + 1) * m), G_K)
 
     # set interslice fixed bandwidth

@@ -10,7 +10,7 @@ install_requires = [
     'joblib',
     'scprep>=1.0',
     'phate>=1.0.0',
-    'graphtools>=1.1',
+    'graphtools>=1.5',
     "tasklogger>=1.0",
 ]
 
