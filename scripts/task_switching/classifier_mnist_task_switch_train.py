@@ -82,10 +82,10 @@ else:
 
 if args.dataset == 'mnist':
     x_train, x_test, y_train, y_test = m_phate.data.load_mnist()
-    epochs_per_task = 4
+    epochs_per_task = 8
 elif args.dataset == 'cifar':
     x_train, x_test, y_train, y_test = m_phate.data.load_cifar()
-    epochs_per_task = 8
+    epochs_per_task = 16
 else:
     raise ValueError
 
@@ -128,7 +128,6 @@ model.compile(optimizer=optimizer, loss=loss,
               metrics=[accuracy])
 
 rehearsal_data = []
-rehearsal_gen = None
 task = []
 loss = []
 val_loss = []
@@ -149,7 +148,7 @@ if output_shape == 2:
 for i, (train_idx, cols) in enumerate(zip(task_idxs, col_idxs)):
     if rehearsal and i > 0:
         new_rehearsal_data = np.random.choice(
-            np.arange(x_train.shape[0])[task_idxs[0]],
+            np.arange(x_train.shape[0])[task_idxs[i-1]],
             n_rehearsal // i, replace=False)
         rehearsal_data = [r[np.linspace(0, len(r), n_rehearsal // i,
                                         endpoint=False).astype(int)]
@@ -157,14 +156,13 @@ for i, (train_idx, cols) in enumerate(zip(task_idxs, col_idxs)):
         task_gen = rehearsal_generator(x_train[train_idx], y_train[train_idx],
                                        x_train[np.concatenate(rehearsal_data)],
                                        y_train[np.concatenate(rehearsal_data)],
-                                       batch_size)
+                                       batch_size * 2)
     else:
         task_gen = generator(x_train[train_idx], y_train[train_idx],
                              batch_size)
     model.fit_generator(
         task_gen,
-        steps_per_epoch=(np.sum(train_idx) // batch_size *
-                         (1 if i == 0 and rehearsal else 2)),
+        steps_per_epoch=np.sum(train_idx) // batch_size,
         epochs=epochs_per_task,
         verbose=0, callbacks=[trace, history],
         validation_data=(x_test,

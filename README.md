@@ -6,6 +6,7 @@
 [![arXiv Preprint](http://img.shields.io/badge/cs.LG-arXiv%3A1908.02831-B31B1B.svg)](https://arxiv.org/abs/1908.02831)
 [![Twitter](https://img.shields.io/twitter/follow/scottgigante.svg?style=social&label=Follow)](https://twitter.com/scottgigante)
 [![GitHub stars](https://img.shields.io/github/stars/scottgigante/M-PHATE.svg?style=social&label=Stars)](https://github.com/scottgigante/M-PHATE/)
+[![Video abstract](https://img.shields.io/youtube/views/P9jacujC1Bc?style=social)](https://www.youtube.com/watch?v=P9jacujC1Bc)
 
 ![Demonstration M-PHATE plot](https://github.com/scottgigante/m-phate/raw/master/img/demonstration.png)
 
